@@ -2,14 +2,14 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("UserManagement", function () {
-    let UserManagement, SoulBoundToken, CommunityToken, userManagement, soulBoundToken, communityToken, owner, addr1, addr2;
+    let UserManagement, SoulBoundToken, CommunityToken, userManagement, soulBoundToken, communityToken, owner, addr1, addr2, addr3;
 
     before(async function () {
         SoulBoundToken = await ethers.getContractFactory("SoulBoundToken");
         CommunityToken = await ethers.getContractFactory("CommunityToken");
         UserManagement = await ethers.getContractFactory("UserManagement");
 
-        [owner, addr1, addr2] = await ethers.getSigners();
+        [owner, addr1, addr2, addr3] = await ethers.getSigners();
 
         soulBoundToken = await SoulBoundToken.deploy();
         await soulBoundToken.deployed();
@@ -88,10 +88,41 @@ describe("UserManagement", function () {
         expect(await soulBoundToken.ownerOf(tokenId)).to.equal(ethers.constants.AddressZero);
     });
 
+    it("Should return an address for existent token in getOwnerOf", async function () {
+        const tokenId = ethers.BigNumber.from(addr1.address).toString();
+        expect(await soulBoundToken.ownerOf(tokenId)).to.equal(addr1.address);
+    });
+
     it("Should handle registration fee update correctly", async function () {
         const newFee = ethers.utils.parseEther("0.002");
         await userManagement.updateRegistrationFee(newFee);
         expect(await userManagement.registrationFee()).to.equal(newFee);
+    });
+
+    it("Should handle membership fee update correctly", async function () {
+        const name = "User Name 2";
+        const description = "User Description 2";
+        const image = "ipfs://Qm...";
+        
+        await userManagement.connect(addr2).registerUser(name, description, image, { value: ethers.utils.parseEther("0.002") });
+        await userManagement.connect(owner).activateUser(addr2.address);
+
+        await userManagement.connect(addr3).registerUser(name, description, image, { value: ethers.utils.parseEther("0.002") });
+        await userManagement.connect(owner).activateUser(addr3.address);
+
+        const users = await userManagement.getAllUsers();
+        expect(users).to.have.lengthOf(2);
+        expect(users[0].userAddress).to.equal(addr2.address);
+        expect(users[0].isRegistered).to.equal(true);
+        expect(users[0].isActive).to.equal(true);
+        expect(users[1].userAddress).to.equal(addr3.address);
+        expect(users[1].isRegistered).to.equal(true);
+        expect(users[1].isActive).to.equal(true);
+
+        const userAddresses = await userManagement.getAllUserAddresses();
+        expect(userAddresses).to.have.lengthOf(2);
+        expect(userAddresses).to.include(addr2.address);
+        expect(userAddresses).to.include(addr3.address);
     });
 });
 

@@ -25,6 +25,12 @@ describe("SoulBoundToken", function () {
         expect(metadata.description).to.equal(description);
         expect(metadata.image).to.equal(image);
         expect(metadata.tokenActivated).to.equal(false);
+
+        const isSubscribed = await soulBoundToken.isSubscribed(tokenId);
+        expect(isSubscribed).to.equal(false);
+
+        const endTime = await soulBoundToken.getSubscriptionEndTime(tokenId);
+        expect(endTime).to.be.eq(0);
     });
 
     it("Should activate a token correctly", async function () {
@@ -49,9 +55,14 @@ describe("SoulBoundToken", function () {
         await soulBoundToken.mint(addr1.address, name, description, image);
 
         const tokenId = ethers.BigNumber.from(addr1.address).toString();
-        await expect(
+
+        await Promise.all([ 
+        expect(
             soulBoundToken["safeTransferFrom(address,address,uint256)"](addr1.address, owner.address, tokenId)
-        ).to.be.revertedWith("Soul Bound Token cannot be transferred");
+        ).to.be.revertedWith("Soul Bound Token cannot be transferred"),
+        expect(
+            soulBoundToken["transferFrom(address,address,uint256)"](addr1.address, owner.address, tokenId)
+        ).to.be.revertedWith("Soul Bound Token cannot be transferred")]);
     });
 
     it("Should renew subscription correctly", async function () {
@@ -63,6 +74,9 @@ describe("SoulBoundToken", function () {
         const tokenId = ethers.BigNumber.from(addr1.address).toString();
         await soulBoundToken.activateToken(tokenId);
 
+        const metadataBefore = await soulBoundToken.getMetadata(tokenId);
+        const initialEndTime = metadataBefore.subscriptionPeriods[metadataBefore.subscriptionPeriods.length - 1].endTime;
+
         // Advance time by one year and one day
         await ethers.provider.send("evm_increaseTime", [365 * 24 * 60 * 60 + 1]);
         await ethers.provider.send("evm_mine", []);
@@ -72,6 +86,11 @@ describe("SoulBoundToken", function () {
         const metadata = await soulBoundToken.getMetadata(tokenId);
         const currentTime = Math.floor(Date.now() / 1000);
         expect(metadata.subscriptionPeriods[metadata.subscriptionPeriods.length - 1].endTime).to.be.gt(currentTime);
+
+        const newEndTime = metadata.subscriptionPeriods[metadata.subscriptionPeriods.length - 1].endTime;
+        // Check if subscription was renewed for one year
+        const oneYearInSeconds = 365 * 24 * 60 * 60;
+        expect(newEndTime.toNumber()).to.be.closeTo(initialEndTime.toNumber() + oneYearInSeconds, 5);
     });
 
     it("Should not renew subscription before the last month", async function () {
