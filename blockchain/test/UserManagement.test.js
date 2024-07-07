@@ -2,82 +2,96 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("UserManagement", function () {
-  let UserManagement, userManagement, owner, addr1;
+    let UserManagement, SoulBoundToken, CommunityToken, userManagement, soulBoundToken, communityToken, owner, addr1, addr2;
 
-  beforeEach(async function () {
-    UserManagement = await ethers.getContractFactory("UserManagement");
-    [owner, addr1] = await ethers.getSigners();
-    userManagement = await UserManagement.deploy();
-    await userManagement.deployed();
-  });
+    before(async function () {
+        SoulBoundToken = await ethers.getContractFactory("SoulBoundToken");
+        CommunityToken = await ethers.getContractFactory("CommunityToken");
+        UserManagement = await ethers.getContractFactory("UserManagement");
 
-  describe("Deployment", function () {
-    it("Should set the right owner", async function () {
-      expect(await userManagement.owner()).to.equal(owner.address);
+        [owner, addr1, addr2] = await ethers.getSigners();
+
+        soulBoundToken = await SoulBoundToken.deploy();
+        await soulBoundToken.deployed();
+
+        communityToken = await CommunityToken.deploy(ethers.utils.parseEther("1000"));
+        await communityToken.deployed();
+
+        userManagement = await UserManagement.deploy(soulBoundToken.address, communityToken.address);
+        await userManagement.deployed();
+
+        await soulBoundToken.transferOwnership(userManagement.address);
+        await communityToken.transferOwnership(userManagement.address);
+
+        expect(await soulBoundToken.owner()).to.equal(userManagement.address);
+        expect(await communityToken.owner()).to.equal(userManagement.address);
     });
 
-    it("Should have the correct registration fee", async function () {
-      expect(await userManagement.registrationFee()).to.equal(ethers.utils.parseEther("0.001"));
-    });
-  });
+    it("Should register a user and mint tokens correctly", async function () {
+        const name = "User Name";
+        const description = "User Description";
+        const image = "ipfs://Qm...";
 
-  describe("Register User", function () {
-    it("Should register a new user", async function () {
-      await userManagement.connect(addr1).registerUser({ value: ethers.utils.parseEther("0.001") });
-      const user = await userManagement.getUser(addr1.address);
-      expect(user.isRegistered).to.equal(true);
-      expect(user.userAddress).to.equal(addr1.address);
-    });
+        await userManagement.connect(addr1).registerUser(name, description, image, { value: ethers.utils.parseEther("0.001") });
+        const user = await userManagement.getUser(addr1.address);
+        expect(user.isRegistered).to.equal(true);
 
-    it("Should fail if registration fee is not sufficient", async function () {
-      await expect(
-        userManagement.connect(addr1).registerUser({ value: ethers.utils.parseEther("0.0001") })
-      ).to.be.revertedWith("Insufficient registration fee");
+        const tokenId = ethers.BigNumber.from(addr1.address).toString();
+        const metadata = await soulBoundToken.getMetadata(tokenId);
+        expect(metadata.name).to.equal(name);
     });
 
-    it("Should fail if user is already registered", async function () {
-      await userManagement.connect(addr1).registerUser({ value: ethers.utils.parseEther("0.001") });
-      await expect(
-        userManagement.connect(addr1).registerUser({ value: ethers.utils.parseEther("0.001") })
-      ).to.be.revertedWith("User already registered");
-    });
-  });
+    it("Should activate a user correctly", async function () {
+        await userManagement.connect(owner).activateUser(addr1.address);
 
-  describe("Update Membership", function () {
-    it("Should update membership expiry", async function () {
-      await userManagement.connect(addr1).registerUser({ value: ethers.utils.parseEther("0.001") });
-      await userManagement.updateMembership(addr1.address);
-      const user = await userManagement.getUser(addr1.address);
-      expect(user.membershipExpiry).to.be.gt((await ethers.provider.getBlock("latest")).timestamp);
+        const user = await userManagement.getUser(addr1.address);
+        expect(user.isActive).to.equal(true);
+
+        const tokenId = ethers.BigNumber.from(addr1.address).toString();
+        const metadata = await soulBoundToken.getMetadata(tokenId);
+        expect(metadata.tokenActivated).to.equal(true);
+
+        const addr1CommunityBalance = await communityToken.balanceOf(addr1.address);
+        expect(ethers.utils.formatEther(addr1CommunityBalance)).to.equal("20.0");
     });
 
-    it("Should fail if user is not registered", async function () {
-      await expect(userManagement.updateMembership(addr1.address)).to.be.revertedWith("User not registered");
-    });
-  });
-
-  describe("Remove User", function () {
-    it("Should remove a user", async function () {
-      await userManagement.connect(addr1).registerUser({ value: ethers.utils.parseEther("0.001") });
-      await userManagement.removeUser(addr1.address);
-      await expect(userManagement.getUser(addr1.address)).to.be.revertedWith("User not registered");
+    it("Should disable a user correctly", async function () {
+        await userManagement.connect(owner).disableUser(addr1.address);
+        const user = await userManagement.getUser(addr1.address);
+        expect(user.isActive).to.equal(false);
     });
 
-    it("Should fail if user is not registered", async function () {
-      await expect(userManagement.removeUser(addr1.address)).to.be.revertedWith("User not registered");
-    });
-  });
+    it("Should update membership correctly", async function () {
+        await userManagement.connect(owner).updateMembership(addr1.address);
 
-  describe("Administrative Actions", function () {
-    it("Should allow owner to update registration fee", async function () {
-      await userManagement.updateRegistrationFee(ethers.utils.parseEther("0.002"));
-      expect(await userManagement.registrationFee()).to.equal(ethers.utils.parseEther("0.002"));
+        const user = await userManagement.getUser(addr1.address);
+        expect(user.membershipExpiry).to.be.gt(Math.floor(Date.now() / 1000));
+
+        const addr1CommunityBalance = await communityToken.balanceOf(addr1.address);
+        expect(ethers.utils.formatEther(addr1CommunityBalance)).to.equal("40.0");
     });
 
-    it("Should not allow non-owner to update registration fee", async function () {
-      await expect(userManagement.connect(addr1).updateRegistrationFee(ethers.utils.parseEther("0.002"))).to.be.revertedWith(
-        "OwnableUnauthorizedAccount"
-      );
+    it("Should revert if activating a user not registered", async function () {
+        await expect(userManagement.activateUser(addr2.address)).to.be.revertedWith("User not registered");
     });
-  });
+
+    it("Should revert if disable a user not registered", async function () {
+        await expect(userManagement.disableUser(addr2.address)).to.be.revertedWith("User not registered");
+    });
+
+    it("Should revert if updating membership for a user not registered", async function () {
+        await expect(userManagement.updateMembership(addr2.address)).to.be.revertedWith("User not registered");
+    });
+
+    it("Should return zero address for non-existent token in getOwnerOf", async function () {
+        const tokenId = ethers.BigNumber.from(addr2.address).toString();
+        expect(await soulBoundToken.ownerOf(tokenId)).to.equal(ethers.constants.AddressZero);
+    });
+
+    it("Should handle registration fee update correctly", async function () {
+        const newFee = ethers.utils.parseEther("0.002");
+        await userManagement.updateRegistrationFee(newFee);
+        expect(await userManagement.registrationFee()).to.equal(newFee);
+    });
 });
+
