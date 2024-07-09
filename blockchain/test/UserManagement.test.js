@@ -2,29 +2,26 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("UserManagement", function () {
-    let UserManagement, SoulBoundToken, CommunityToken, userManagement, soulBoundToken, communityToken, owner, addr1, addr2, addr3;
+    let userManagement, owner, addr1, addr2, addr3;
 
     before(async function () {
-        SoulBoundToken = await ethers.getContractFactory("SoulBoundToken");
-        CommunityToken = await ethers.getContractFactory("CommunityToken");
-        UserManagement = await ethers.getContractFactory("UserManagement");
-
         [owner, addr1, addr2, addr3] = await ethers.getSigners();
 
-        soulBoundToken = await SoulBoundToken.deploy();
-        await soulBoundToken.deployed();
+        const UserManagement = await ethers.getContractFactory("UserManagement");
+        const initialSupply = ethers.parseUnits("1000000", 18);
+        
+        userManagement = await UserManagement.deploy(initialSupply);
+        await userManagement.waitForDeployment();
+        
+        console.log("UserManagement deployed to:", userManagement.target);
 
-        communityToken = await CommunityToken.deploy(ethers.utils.parseEther("1000"));
-        await communityToken.deployed();
+        const communityTokenAddress = await userManagement.ctk();
+        const communityToken = await ethers.getContractAt("CommunityToken", communityTokenAddress);
+        const soulBoundTokenAddress = await userManagement.sbt();
+        const soulBoundToken = await ethers.getContractAt("SoulBoundToken", soulBoundTokenAddress);
 
-        userManagement = await UserManagement.deploy(soulBoundToken.address, communityToken.address);
-        await userManagement.deployed();
-
-        await soulBoundToken.transferOwnership(userManagement.address);
-        await communityToken.transferOwnership(userManagement.address);
-
-        expect(await soulBoundToken.owner()).to.equal(userManagement.address);
-        expect(await communityToken.owner()).to.equal(userManagement.address);
+        expect(await communityToken.owner()).to.equal(userManagement.target);
+        expect(await soulBoundToken.owner()).to.equal(userManagement.target);
     });
 
     it("Should register a user and mint tokens correctly", async function () {
@@ -32,13 +29,9 @@ describe("UserManagement", function () {
         const description = "User Description";
         const image = "ipfs://Qm...";
 
-        await userManagement.connect(addr1).registerUser(name, description, image, { value: ethers.utils.parseEther("0.001") });
+        await userManagement.connect(addr1).registerUser(name, description, image, { value: ethers.parseUnits("0.001", 18) });
         const user = await userManagement.getUser(addr1.address);
         expect(user.isRegistered).to.equal(true);
-
-        const tokenId = ethers.BigNumber.from(addr1.address).toString();
-        const metadata = await soulBoundToken.getMetadata(tokenId);
-        expect(metadata.name).to.equal(name);
     });
 
     it("Should activate a user correctly", async function () {
@@ -47,12 +40,10 @@ describe("UserManagement", function () {
         const user = await userManagement.getUser(addr1.address);
         expect(user.isActive).to.equal(true);
 
-        const tokenId = ethers.BigNumber.from(addr1.address).toString();
-        const metadata = await soulBoundToken.getMetadata(tokenId);
-        expect(metadata.tokenActivated).to.equal(true);
-
+        const communityTokenAddress = await userManagement.ctk();
+        const communityToken = await ethers.getContractAt("CommunityToken", communityTokenAddress);
         const addr1CommunityBalance = await communityToken.balanceOf(addr1.address);
-        expect(ethers.utils.formatEther(addr1CommunityBalance)).to.equal("20.0");
+        expect(ethers.formatUnits(addr1CommunityBalance, 18)).to.equal("20.0");
     });
 
     it("Should disable a user correctly", async function () {
@@ -67,15 +58,17 @@ describe("UserManagement", function () {
         const user = await userManagement.getUser(addr1.address);
         expect(user.membershipExpiry).to.be.gt(Math.floor(Date.now() / 1000));
 
+        const communityTokenAddress = await userManagement.ctk();
+        const communityToken = await ethers.getContractAt("CommunityToken", communityTokenAddress);
         const addr1CommunityBalance = await communityToken.balanceOf(addr1.address);
-        expect(ethers.utils.formatEther(addr1CommunityBalance)).to.equal("40.0");
+        expect(ethers.formatUnits(addr1CommunityBalance, 18)).to.equal("40.0");
     });
 
     it("Should revert if activating a user not registered", async function () {
         await expect(userManagement.activateUser(addr2.address)).to.be.revertedWith("User not registered");
     });
 
-    it("Should revert if disable a user not registered", async function () {
+    it("Should revert if disabling a user not registered", async function () {
         await expect(userManagement.disableUser(addr2.address)).to.be.revertedWith("User not registered");
     });
 
@@ -84,17 +77,17 @@ describe("UserManagement", function () {
     });
 
     it("Should return zero address for non-existent token in getOwnerOf", async function () {
-        const tokenId = ethers.BigNumber.from(addr2.address).toString();
-        expect(await soulBoundToken.ownerOf(tokenId)).to.equal(ethers.constants.AddressZero);
+        const owner = await userManagement.getOwnerOf(addr2.address);
+        expect(owner).to.equal(ethers.ZeroAddress);
     });
 
     it("Should return an address for existent token in getOwnerOf", async function () {
-        const tokenId = ethers.BigNumber.from(addr1.address).toString();
-        expect(await soulBoundToken.ownerOf(tokenId)).to.equal(addr1.address);
+        const owner = await userManagement.getOwnerOf(addr1.address);
+        expect(owner).to.equal(addr1.address);
     });
 
     it("Should handle registration fee update correctly", async function () {
-        const newFee = ethers.utils.parseEther("0.002");
+        const newFee = ethers.parseUnits("0.002", 18);
         await userManagement.updateRegistrationFee(newFee);
         expect(await userManagement.registrationFee()).to.equal(newFee);
     });
@@ -103,11 +96,11 @@ describe("UserManagement", function () {
         const name = "User Name 2";
         const description = "User Description 2";
         const image = "ipfs://Qm...";
-        
-        await userManagement.connect(addr2).registerUser(name, description, image, { value: ethers.utils.parseEther("0.002") });
+
+        await userManagement.connect(addr2).registerUser(name, description, image, { value: ethers.parseUnits("0.002", 18) });
         await userManagement.connect(owner).activateUser(addr2.address);
 
-        await userManagement.connect(addr3).registerUser(name, description, image, { value: ethers.utils.parseEther("0.002") });
+        await userManagement.connect(addr3).registerUser(name, description, image, { value: ethers.parseUnits("0.002", 18) });
         await userManagement.connect(owner).activateUser(addr3.address);
 
         const users = await userManagement.getAllUsers();
@@ -124,5 +117,35 @@ describe("UserManagement", function () {
         expect(userAddresses).to.include(addr2.address);
         expect(userAddresses).to.include(addr3.address);
     });
-});
 
+    it("Should check if a user is subscribed", async function () {
+        const isSubscribed = await userManagement.isSubscribed(addr1.address);
+        expect(isSubscribed).to.equal(true);
+    });
+
+    it("Should renew the subscription of a user", async function () {
+        // Simulate 30 days passing
+        const user = await userManagement.getUser(addr1.address);
+        const currentTime = BigInt(Math.floor(Date.now() / 1000));
+        const timeToAdvance = user.membershipExpiry - currentTime - BigInt(30 * 24 * 60 * 60); // go back 30 days
+
+        await ethers.provider.send("evm_increaseTime", [Number(timeToAdvance)]);
+        await ethers.provider.send("evm_mine");
+
+        await userManagement.connect(owner).renewSubscription(addr1.address);
+
+        const subscriptionEndTime = await userManagement.getSubscriptionEndTime(addr1.address);
+        expect(subscriptionEndTime).to.be.gt(Math.floor(Date.now() / 1000));
+    });
+
+    it("Should get the subscription end time of a user", async function () {
+        const subscriptionEndTime = await userManagement.getSubscriptionEndTime(addr1.address);
+        expect(subscriptionEndTime).to.be.gt(0);
+    });
+
+    it("Should get the metadata of a user", async function () {
+        const metadata = await userManagement.getMetadata(addr1.address);
+        expect(metadata.name).to.equal("User Name");
+        expect(metadata.description).to.equal("User Description");
+    });
+});

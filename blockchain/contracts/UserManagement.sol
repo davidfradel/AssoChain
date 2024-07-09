@@ -32,15 +32,13 @@ contract UserManagement is Ownable {
     event FeeUpdated(uint256 newFee);
 
     /**
-     * @dev Constructor that sets the addresses of the SoulBoundToken and CommunityToken contracts.
-     * @param _sbt The address of the SoulBoundToken contract.
-     * @param _ctk The address of the CommunityToken contract.
+     * @dev Constructor that deploys SoulBoundToken and CommunityToken.
+     * @param initialSupply The initial supply of the CommunityToken.
      */
-    constructor(SoulBoundToken _sbt, CommunityToken _ctk) Ownable(msg.sender) {
-        sbt = _sbt;
-        ctk = _ctk;
+    constructor(uint256 initialSupply) Ownable(msg.sender) {
+        sbt = new SoulBoundToken();
+        ctk = new CommunityToken(initialSupply);
     }
-
     /**
      * @dev Registers a new user by minting a SoulBoundToken and storing the user's information.
      * @param name The name of the user.
@@ -162,5 +160,71 @@ contract UserManagement is Ownable {
     function updateRegistrationFee(uint256 _newFee) public onlyOwner {
         registrationFee = _newFee;
         emit FeeUpdated(_newFee);
+    }
+
+    function mintCommunityToken(address to, uint256 amount) external onlyOwner {
+        ctk.mint(to, amount);
+    }
+
+    /**
+     * @dev Retrieves the balance of CommunityTokens for a user.
+     * @param account The address of the user to retrieve the balance for.
+     */
+    function getCommunityTokenBalance(
+        address account
+    ) external view returns (uint256) {
+        return ctk.balanceOf(account);
+    }
+
+    /**
+     * @dev Retrieves the owner of a user's SoulBoundToken.
+     * @param user The address of the user to retrieve the owner for.
+     */
+    function getOwnerOf(address user) external view returns (address) {
+        uint256 tokenId = uint256(uint160(user));
+        return sbt.ownerOf(tokenId);
+    }
+
+    /**
+     * @dev Checks if a user is subscribed.
+     * @param user Address of the user to check.
+     * @return bool True if the user is subscribed, false otherwise.
+     */
+    function isSubscribed(address user) external view returns (bool) {
+        uint256 tokenId = uint256(uint160(user));
+        return sbt.isSubscribed(tokenId);
+    }
+
+    /**
+     * @dev Renews the subscription of a user.
+     * @param user The address of the user to renew the subscription for.
+     */
+    function renewSubscription(address user) external onlyOwner {
+        uint256 tokenId = uint256(uint160(user));
+        sbt.renewSubscription(tokenId);
+    }
+
+    /**
+     * @dev Gets the time of the end of the subscription of a user.
+     * @param user The address of the user to get the subscription end time for.
+     * @return uint256 The subscription end time.
+     */
+    function getSubscriptionEndTime(
+        address user
+    ) external view returns (uint256) {
+        uint256 tokenId = uint256(uint160(user));
+        return sbt.getSubscriptionEndTime(tokenId);
+    }
+
+    /**
+     * @dev Gets the metadata of a user.
+     * @param user The address of the user to get the metadata for.
+     * @return Metadata The metadata of the user.
+     */
+    function getMetadata(
+        address user
+    ) external view returns (SoulBoundToken.Metadata memory) {
+        uint256 tokenId = uint256(uint160(user));
+        return sbt.getMetadata(tokenId);
     }
 }

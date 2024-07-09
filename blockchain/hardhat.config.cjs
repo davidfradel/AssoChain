@@ -1,7 +1,10 @@
-require('@nomiclabs/hardhat-waffle');
-require('@nomiclabs/hardhat-ethers');
+require("@nomicfoundation/hardhat-chai-matchers");
 require("@nomicfoundation/hardhat-ignition-ethers");
-require('solidity-coverage');
+require("@nomicfoundation/hardhat-ethers");
+require("@nomicfoundation/hardhat-verify");
+require("@typechain/hardhat");
+require("solidity-coverage");
+
 require('dotenv').config();
 
 const config = {
