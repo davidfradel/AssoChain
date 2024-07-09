@@ -1,5 +1,6 @@
 require('@nomiclabs/hardhat-waffle');
 require('@nomiclabs/hardhat-ethers');
+require("@nomicfoundation/hardhat-ignition-ethers");
 require('solidity-coverage');
 require('dotenv').config();
 
@@ -8,6 +9,9 @@ const config = {
   networks: {
     hardhat: {
       chainId: 1337,
+    },
+    localhost: {
+      url: "http://127.0.0.1:8545",
     },
     arbitrumSepolia: {
       url: 'https://sepolia-rollup.arbitrum.io/rpc',

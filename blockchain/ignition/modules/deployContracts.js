@@ -1,20 +1,26 @@
 const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
+const { ethers } = require("hardhat");
 
-module.exports = buildModule("Deploy Contracts", async (m) => {
-  // Deploy soulBoundToken, communityToken and userManagement
-  const soulBoundToken = await m.contract("SoulBoundToken");
-  const communityToken = await m.contract("CommunityToken", [ethers.utils.parseEther("1000000")]);
-  const userManagement = await m.contract("UserManagement", [soulBoundToken, communityToken]);
+module.exports = buildModule("DeployContractsModule", (m) => {
+  // Deploy soulBoundToken
+  const soulBoundToken = m.contract("SoulBoundToken");
 
-  // Transfert ownership of SoulBoundToken to UserManagement
-  await m.call(soulBoundToken, "transferOwnership", {
-    args: [userManagement.address],
+  // Deploy communityToken with initial supply
+  const initialSupply = ethers.utils.parseUnits("1000000", 18).toString();
+  const communityToken = m.contract("CommunityToken", [initialSupply]);
+
+  // Deploy userManagement with references to the deployed tokens
+  const userManagement = m.contract("UserManagement", [soulBoundToken, communityToken]);
+
+  // Transfer ownership of SoulBoundToken to UserManagement
+  m.call(soulBoundToken, "transferOwnership", {
+    args: [userManagement],
     from: m.deployer
   });
 
-   // Transfert ownership of CommunityToken to UserManagement
-  await m.call(communityToken, "transferOwnership", {
-    args: [userManagement.address],
+  // Transfer ownership of CommunityToken to UserManagement
+  m.call(communityToken, "transferOwnership", {
+    args: [userManagement],
     from: m.deployer
   });
 
