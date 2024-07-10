@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FaHome, FaAddressBook, FaFileInvoiceDollar, FaProjectDiagram, FaWallet, FaRunning, FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import { FaHome, FaAddressBook, FaFileInvoiceDollar, FaUserFriends, FaProjectDiagram, FaWallet, FaRunning, FaChevronDown, FaChevronRight } from 'react-icons/fa';
 
 const Sidebar: React.FC = () => {
   const pathname = usePathname();
@@ -19,9 +19,9 @@ const Sidebar: React.FC = () => {
         { name: 'Ajouter un contact', path: '/contacts/add' },
         { name: 'Modifier contact', path: '/contacts/edit' },
         { name: 'Liste des adhérents', path: '/contacts/members' },
-        { name: 'Adhésions', path: '/contacts/memberships' },
       ],
     },
+    { name: 'Adhésions', path: '/memberships', icon: <FaUserFriends /> },
     { name: 'Facture et devis', path: '/invoices', icon: <FaFileInvoiceDollar /> },
     { name: 'Projets documentaires', path: '/projects', icon: <FaProjectDiagram /> },
     { name: 'Organisation sportive', path: '/sports-organization', icon: <FaRunning /> },

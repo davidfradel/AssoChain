@@ -7,7 +7,7 @@ import { MdLocationOn } from 'react-icons/md';
 const Card = styled.div`
   display: flex;
   align-items: center;
-  padding: 20px;
+  padding: 40px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   background-color: #fff;
@@ -18,7 +18,7 @@ const Avatar = styled.img`
   width: 150px;
   height: 150px;
   border-radius: 10%;
-  margin-right: 20px;
+  margin-right: 40px;
 `;
 
 const Info = styled.div`
@@ -151,7 +151,7 @@ const UserProfile: React.FC<ProfileCardProps> = ({
             <StatLabel>Documents onchain</StatLabel>
           </Stat>
           <ProfileCompletion>
-            <StatLabel>Profile Completion</StatLabel>
+            <StatLabel>Complétion du profil</StatLabel>
             <ProgressBarContainer>
               <ProgressBar>
                 <Progress percentage={profileCompletion} />
