@@ -1,24 +1,32 @@
-'use client';
-import React from 'react';
 import styled from 'styled-components';
-import { FaCheckCircle, FaEnvelope } from 'react-icons/fa';
+import { FaCheckCircle, FaEnvelope, FaWallet } from 'react-icons/fa';
 import { MdLocationOn } from 'react-icons/md';
+import { useAccount, useBalance, useEnsName } from 'wagmi';
 
 const Card = styled.div`
   display: flex;
-  align-items: center;
-  padding: 40px;
+  flex-direction: column;
+  padding: 20px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   background-color: #fff;
   margin-bottom: 20px;
+  min-height: 70vh;
+  width: 70%;
+  margin: 0 auto;
+`;
+
+const Header = styled.div`
+  display: flex;
+  align-items: start;
+  margin-bottom: 20px;
 `;
 
 const Avatar = styled.img`
-  width: 150px;
-  height: 150px;
+  width: 100px;
+  height: 100px;
   border-radius: 10%;
-  margin-right: 40px;
+  margin-right: 20px;
 `;
 
 const Info = styled.div`
@@ -34,8 +42,9 @@ const Name = styled.h2`
 
 const Details = styled.div`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  margin: 5px 0;
+  margin: 10px 0;
 `;
 
 const DetailItem = styled.p`
@@ -47,53 +56,38 @@ const DetailItem = styled.p`
   margin-bottom: 0;
 `;
 
-const Stats = styled.div`
+const WalletInfo = styled.div`
   display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
+  flex-direction: row;
+  justify-content: space-around;
+  justify-items: center;
+  margin-top: 50px;
+  padding-top: 50px;
+  border-top: solid #777;
 `;
 
-const Stat = styled.div`
-  text-align: center;
+const Balance = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
-const StatNumber = styled.p`
+const BalanceLabel = styled.p`
+  font-size: 1em;
+  color: #777;
+  margin-right: 10px;
+`;
+
+const BalanceValue = styled.p`
   font-size: 1.2em;
   margin: 0;
 `;
 
-const StatLabel = styled.p`
-  font-size: 0.9em;
-  color: #777;
-  margin: 0;
-`;
-
-const ProfileCompletion = styled.div`
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  text-align: center;
-`;
-
-const ProgressBarContainer = styled.div`
-  display: flex;
-  align-items: center;
-  width: 100%;
-`;
-
-const ProgressBar = styled.div`
-  flex: 1;
-  height: 8px;
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-right: 10px;
-`;
-
-const Progress = styled.div<{ percentage: number }>`
-  width: ${({ percentage }) => percentage}%;
-  height: 100%;
-  background-color: #4caf50;
+const NFTImage = styled.img`
+  width: 150px;
+  height: 150px;
+  border-radius: 10%;
+  margin-top: 20px;
 `;
 
 interface ProfileCardProps {
@@ -103,9 +97,7 @@ interface ProfileCardProps {
   location: string;
   email: string;
   fbbCommunityToken: number;
-  documentsInProgress: number;
-  documentsOnChain: number;
-  profileCompletion: number;
+  nftImageUrl: string;
 }
 
 const UserProfile: React.FC<ProfileCardProps> = ({
@@ -115,52 +107,54 @@ const UserProfile: React.FC<ProfileCardProps> = ({
   location,
   email,
   fbbCommunityToken,
-  documentsInProgress,
-  documentsOnChain,
-  profileCompletion,
+  nftImageUrl
 }) => {
+  const { address } = useAccount();
+  const { data: balance } = useBalance({ address });
+
   return (
     <Card>
-      <Avatar src={avatar} alt={`${name}'s avatar`} />
-      <Info>
-        <Name>
-          {name} <FaCheckCircle style={{ marginLeft: 5, color: 'SkyBlue' }} />
-        </Name>
-        <Details>
-          <DetailItem>{role}</DetailItem>
-          <DetailItem>
-            <MdLocationOn style={{ marginRight: 5 }} />
-            {location}
-          </DetailItem>
-          <DetailItem>
-            <FaEnvelope style={{ marginRight: 5 }} />
-            {email}
-          </DetailItem>
-        </Details>
-        <Stats>
-          <Stat>
-            <StatNumber>{fbbCommunityToken}</StatNumber>
-            <StatLabel>FFB-Community-Token</StatLabel>
-          </Stat>
-          <Stat>
-            <StatNumber>{documentsInProgress}</StatNumber>
-            <StatLabel>Documents en cours</StatLabel>
-          </Stat>
-          <Stat>
-            <StatNumber>{documentsOnChain}%</StatNumber>
-            <StatLabel>Documents onchain</StatLabel>
-          </Stat>
-          <ProfileCompletion>
-            <StatLabel>Complétion du profil</StatLabel>
-            <ProgressBarContainer>
-              <ProgressBar>
-                <Progress percentage={profileCompletion} />
-              </ProgressBar>
-              <span>{profileCompletion}%</span>
-            </ProgressBarContainer>
-          </ProfileCompletion>
-        </Stats>
-      </Info>
+      <Header>
+        <Avatar src={avatar} alt={`${name}'s avatar`} />
+        <Info>
+          <Name>
+            {name} <FaCheckCircle style={{ marginLeft: 5, color: 'SkyBlue' }} />
+          </Name>
+          <Details>
+            <DetailItem>{role}</DetailItem>
+            <DetailItem>
+              <MdLocationOn style={{ marginRight: 5 }} />
+              {location}
+            </DetailItem>
+            <DetailItem>
+              <FaEnvelope style={{ marginRight: 5 }} />
+              {email}
+            </DetailItem>
+            <DetailItem>
+              <FaWallet style={{ marginRight: 5 }} />
+              {address}
+            </DetailItem>
+          </Details>
+        </Info>
+      </Header>
+      <WalletInfo>
+        <Balance>
+          <BalanceLabel>Votre solde ETH:</BalanceLabel>
+          <BalanceValue>{balance?.formatted} ETH</BalanceValue>
+        </Balance>
+        <Balance>
+          <BalanceLabel>Votre solde FFB Community Token:</BalanceLabel>
+          <BalanceValue>{fbbCommunityToken} FFB</BalanceValue>
+        </Balance>
+         <Balance>
+          <BalanceLabel>Votre NFT unique:</BalanceLabel>
+          <BalanceValue> {nftImageUrl && (
+              <NFTImage src={nftImageUrl} alt="NFT" />
+            )}
+      </BalanceValue>
+        </Balance>
+      </WalletInfo>
+     
     </Card>
   );
 };
