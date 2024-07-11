@@ -1,11 +1,7 @@
 import React from 'react';
 import CustomRainbowKitProvider from './CustomRainbowKitProvider';
-import { Inter } from 'next/font/google';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import Sidebar from '../components/Sidebar';
-
-const inter = Inter({ subsets: ['latin'] });
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 export const metadata = {
   title: 'AssoChain',
@@ -23,13 +19,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="flex flex-col min-h-screen">
         <CustomRainbowKitProvider>
           <Header />
-          <div className="flex flex-grow">
-            <Sidebar />
-            <main className="flex-grow bg-slate-100">
-              {children}
-            </main>
-          </div>
-           <Footer />
+          <main className="flex-grow flex flex-col bg-slate-100">
+            {children}
+          </main>
+          <Footer />
         </CustomRainbowKitProvider>
       </body>
     </html>

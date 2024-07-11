@@ -1,9 +1,18 @@
 'use strict';
 import React from 'react';
-import AddContact from '../../../components/AddContact';
+import Sidebar from '@/components/Sidebar';
+import AddContact from '@/components/AddContact';
 
 const AddContactPage = () => {
-  return <AddContact />;
+  
+  return (
+    <div className="flex">
+      <Sidebar />
+        <div className="flex-grow p-6">
+          <AddContact />
+        </div>
+    </div>
+  )
 };
 
 export default AddContactPage;

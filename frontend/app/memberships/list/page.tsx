@@ -1,18 +1,18 @@
-'use client';
-
+'use strict';
 import React from 'react';
 import Sidebar from '@/components/Sidebar';
-import SportResults from '@/components/SportResults';
+import MembershipList from '@/components/MembershipList';
 
-const ResultsPage = () => {
-    return (
+const MembershipListPage = () => {
+  
+  return (
     <div className="flex">
       <Sidebar />
         <div className="flex-grow p-6">
-          <SportResults />
+          <MembershipList />
         </div>
     </div>
   )
 };
 
-export default ResultsPage;
+export default MembershipListPage;

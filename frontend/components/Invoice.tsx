@@ -6,15 +6,9 @@ import styled from 'styled-components';
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
   padding: 20px;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
+  background-color: #f9fafb;
 `;
-
 
 const Header = styled.div`
   display: flex;
@@ -83,12 +77,12 @@ const TableData = styled.td`
 const StatusButton = styled.button<{ status: string }>`
   background-color: ${({ status }) => {
     switch (status) {
-      case 'En cours d\'onchainisation':
-        return '#ffc107';
-      case 'En attente':
-        return '#17a2b8';
-      case 'Lien onchain':
+      case 'Payé':
         return '#28a745';
+      case 'En attente':
+        return '#ffc107';
+      case 'En retard':
+        return '#dc3545';
       default:
         return '#6c757d';
     }
@@ -127,36 +121,35 @@ const PaginationButton = styled.button`
   }
 `;
 
-interface Project {
-  name: string;
+interface Invoice {
+  client: string;
   type: string;
+  amount: string;
   date: string;
   status: string;
-  link: string;
 }
 
-const projects: Project[] = [
-  { name: 'DCE Marché matériel', type: 'PDF', date: '20/05/2023', status: 'En cours d\'onchainisation', link: 'Lien indisponible' },
-  { name: 'Budget prévisionnel', type: 'XLSX', date: '12/04/2023', status: 'En attente', link: 'Lien onchain' },
-  { name: 'Rapport annuel', type: 'DOCX', date: '15/03/2023', status: 'Lien onchain', link: 'Voir le document' },
-  { name: 'Contrat sponsor', type: 'PDF', date: '30/01/2023', status: 'En cours d\'onchainisation', link: 'Lien indisponible' },
-  { name: 'Règlement intérieur', type: 'DOC', date: '01/02/2023', status: 'En attente', link: 'Lien onchain' },
-  { name: 'Calendrier compétitions', type: 'XLSX', date: '10/02/2023', status: 'Lien onchain', link: 'Voir le document' },
-  { name: 'Plan de formation', type: 'PDF', date: '05/02/2023', status: 'En attente', link: 'Lien onchain' },
-  { name: 'Statistiques annuelles', type: 'XLSX', date: '20/01/2023', status: 'Lien onchain', link: 'Voir le document' },
-  { name: 'Compte rendu AG', type: 'DOCX', date: '18/03/2023', status: 'En cours d\'onchainisation', link: 'Lien indisponible' },
-  { name: 'Plan stratégique', type: 'PDF', date: '25/01/2023', status: 'En attente', link: 'Lien onchain' },
-  { name: 'Guide des bonnes pratiques', type: 'DOC', date: '14/02/2023', status: 'Lien onchain', link: 'Voir le document' },
-  { name: 'Procédure d\'inscription', type: 'PDF', date: '05/01/2023', status: 'En cours d\'onchainisation', link: 'Lien indisponible' },
+const invoices: Invoice[] = [
+  { client: 'ABC Corp', type: 'Facture', amount: '500 €', date: '22/06/2023', status: 'Payé' },
+  { client: 'XYZ Ltd', type: 'Devis', amount: '1000 €', date: '15/05/2023', status: 'En attente' },
+  { client: 'ACME Inc', type: 'Facture', amount: '750 €', date: '10/04/2023', status: 'En retard' },
+  { client: 'Global Corp', type: 'Devis', amount: '2000 €', date: '25/03/2023', status: 'Payé' },
+  { client: 'Tech Solutions', type: 'Facture', amount: '1200 €', date: '20/02/2023', status: 'En attente' },
+  { client: 'Business Co', type: 'Devis', amount: '1500 €', date: '30/01/2023', status: 'En retard' },
+  { client: 'Fast Services', type: 'Facture', amount: '300 €', date: '18/01/2023', status: 'Payé' },
+  { client: 'Bright Ideas', type: 'Devis', amount: '1800 €', date: '05/12/2022', status: 'En attente' },
+  { client: 'Next Gen', type: 'Facture', amount: '400 €', date: '12/11/2022', status: 'En retard' },
+  { client: 'Future Tech', type: 'Devis', amount: '2200 €', date: '01/10/2022', status: 'Payé' },
 ];
 
-const ProjectList = () => {
+const InvoiceList = () => {
   return (
     <Container>
       <Header>
         <div className="title-container">
-          <h1 className="title-text">Liste des projets</h1>
+          <h1 className="title-text">Liste des factures</h1>
         </div>
+        <h1>Liste des factures et devis</h1>
         <ButtonGroup>
           <Button>
             <i className="fa fa-filter"></i>
@@ -168,31 +161,31 @@ const ProjectList = () => {
           </Button>
           <Button>
             <i className="fa fa-plus"></i>
-            Ajouter un projet
+            Ajouter une facture/devis
           </Button>
         </ButtonGroup>
       </Header>
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Nom</TableCell>
+            <TableCell>Client</TableCell>
             <TableCell>Type</TableCell>
+            <TableCell>Montant</TableCell>
             <TableCell>Date</TableCell>
             <TableCell>Statut</TableCell>
-            <TableCell>Lien</TableCell>
             <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
         <tbody>
-          {projects.map((project, index) => (
+          {invoices.map((invoice, index) => (
             <TableRow key={index}>
-              <TableData>{project.name}</TableData>
-              <TableData>{project.type}</TableData>
-              <TableData>{project.date}</TableData>
+              <TableData>{invoice.client}</TableData>
+              <TableData>{invoice.type}</TableData>
+              <TableData>{invoice.amount}</TableData>
+              <TableData>{invoice.date}</TableData>
               <TableData>
-                <StatusButton status={project.status}>{project.status}</StatusButton>
+                <StatusButton status={invoice.status}>{invoice.status}</StatusButton>
               </TableData>
-              <TableData>{project.link}</TableData>
               <TableData>
                 <Button>Actions</Button>
               </TableData>
@@ -210,4 +203,4 @@ const ProjectList = () => {
   );
 };
 
-export default ProjectList;
+export default InvoiceList;

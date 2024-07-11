@@ -7,8 +7,6 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 
 const Header = () => {
-
-
  return (
    <header className="container mx-auto flex my-1 justify-between items-center">
       <Link href="/">

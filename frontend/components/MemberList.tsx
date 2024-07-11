@@ -8,10 +8,10 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 1200px; /* Limite la largeur pour éviter le débordement */
-  margin: 0 auto; /* Centre le conteneur */
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 20px;
-  background-color: white; /* Ajoute un fond blanc pour contraster avec le background global */
+  background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
 `;
@@ -110,7 +110,9 @@ const ActionButton = styled.button`
 const MemberList = () => (
   <Container>
     <Header>
-      <h1>Liste des adhérents</h1>
+        <div className="title-container">
+          <h1 className="title-text">Liste des contacts</h1>
+        </div>
       <ButtonGroup>
         <Button>
           <FaFilter />

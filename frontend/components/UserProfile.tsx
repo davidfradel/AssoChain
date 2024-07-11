@@ -102,7 +102,7 @@ interface ProfileCardProps {
   role: string;
   location: string;
   email: string;
-  tezos: number;
+  fbbCommunityToken: number;
   documentsInProgress: number;
   documentsOnChain: number;
   profileCompletion: number;
@@ -114,7 +114,7 @@ const UserProfile: React.FC<ProfileCardProps> = ({
   role,
   location,
   email,
-  tezos,
+  fbbCommunityToken,
   documentsInProgress,
   documentsOnChain,
   profileCompletion,
@@ -139,7 +139,7 @@ const UserProfile: React.FC<ProfileCardProps> = ({
         </Details>
         <Stats>
           <Stat>
-            <StatNumber>{tezos}</StatNumber>
+            <StatNumber>{fbbCommunityToken}</StatNumber>
             <StatLabel>FFB-Community-Token</StatLabel>
           </Stat>
           <Stat>

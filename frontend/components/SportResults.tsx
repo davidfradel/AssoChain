@@ -2,7 +2,6 @@
 
 import React from 'react';
 import styled from 'styled-components';
-import { FaFilter, FaFileExport, FaPlus, FaSyncAlt } from 'react-icons/fa';
 
 const Container = styled.div`
   display: flex;
@@ -47,116 +46,168 @@ const Button = styled.button`
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
-const TableHeader = styled.th`
-  text-align: left;
-  padding: 10px;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #e0e0e0;
+const TableHead = styled.thead`
+  background-color: #f1f5f9;
 `;
 
 const TableRow = styled.tr`
+  &:nth-child(even) {
+    background-color: #f9fafb;
+  }
+
   &:hover {
-    background-color: #f8f8f8;
+    background-color: #f1f5f9;
   }
 `;
 
-const TableCell = styled.td`
-  padding: 10px;
-  border-bottom: 1px solid #e0e0e0;
+const TableCell = styled.th`
+  padding: 15px;
+  text-align: left;
+  font-weight: bold;
+  color: #333;
 `;
 
-interface StatusTagProps {
-  status: string;
-}
+const TableData = styled.td`
+  padding: 15px;
+  text-align: left;
+  color: #555;
+`;
 
-const StatusTag = styled.span<StatusTagProps>`
-  background-color: ${props => (props.status === 'En cours' ? '#ff9800' : '#28a745')};
+const StatusButton = styled.button<{ status: string }>`
+  background-color: ${({ status }) => {
+    switch (status) {
+      case 'En cours':
+        return '#ffc107';
+      case 'Voir les scores':
+        return '#28a745';
+      default:
+        return '#6c757d';
+    }
+  }};
   color: white;
+  border: none;
   padding: 5px 10px;
   border-radius: 5px;
-  font-size: 12px;
+  cursor: pointer;
+  font-size: 0.9em;
 `;
 
 const Pagination = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px 0;
+  margin-top: 20px;
 `;
 
-const PageNumber = styled.span`
-  display: inline-block;
-  margin: 0 5px;
+const PaginationButton = styled.button`
+  background-color: #007bff;
+  color: white;
+  border: none;
   padding: 10px 15px;
-  border: 1px solid #007bff;
-  color: #007bff;
   border-radius: 5px;
   cursor: pointer;
+  margin: 0 5px;
 
-  &.active {
-    background-color: #007bff;
-    color: white;
+  &:hover {
+    background-color: #0056b3;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
   }
 `;
 
-const SportResults = () => (
-  <Container>
-    <Header>
-      <h1>Liste des résultats</h1>
-      <ButtonGroup>
-        <Button>
-          <FaFilter />
-          Filtrer
-        </Button>
-        <Button>
-          <FaFileExport />
-          Export
-        </Button>
-        <Button>
-          <FaPlus />
-          Ajouter des résultats
-        </Button>
-      </ButtonGroup>
-    </Header>
-    <Table>
-      <thead>
-        <tr>
-          <TableHeader>Organisation</TableHeader>
-          <TableHeader>Lieu</TableHeader>
-          <TableHeader>Organisateur</TableHeader>
-          <TableHeader>Nbr de combats</TableHeader>
-          <TableHeader>Date</TableHeader>
-          <TableHeader>Actions</TableHeader>
-        </tr>
-      </thead>
-      <tbody>
-        {[
-          { organisation: 'Champ. EBU', lieu: 'Palais des sports - Levallois', organisateur: 'All Stars', nbrCombats: 8, date: '4 Juil 2023', status: 'En cours' },
-          { organisation: 'La nuit des champions', lieu: 'Palais des sports - Levallois', organisateur: 'All Stars', nbrCombats: 12, date: '10 Juin 2023', status: 'Terminé' },
-          { organisation: 'Champ. France BEA', lieu: 'Gym Jean Zay - Besançon', organisateur: 'Local Boxe Club', nbrCombats: 28, date: '2 Juin 2023', status: 'Terminé' },
-          { organisation: 'Gala de prestige mixte', lieu: 'Gym Cavale Blanch - Brest', organisateur: 'Ring Brestois', nbrCombats: 16, date: '29 Mai 2023', status: 'Terminé' },
-        ].map((item, index) => (
-          <TableRow key={index}>
-            <TableCell>{item.organisation}</TableCell>
-            <TableCell>{item.lieu}</TableCell>
-            <TableCell>{item.organisateur}</TableCell>
-            <TableCell>{item.nbrCombats}</TableCell>
-            <TableCell>{item.date}</TableCell>
-            <TableCell>
-              <StatusTag status={item.status}>{item.status}</StatusTag>
-              <FaSyncAlt style={{ marginLeft: 10, cursor: 'pointer' }} />
-            </TableCell>
+const Results = () => {
+  return (
+    <Container>
+      <Header>
+        <div className="title-container">
+          <h1 className="title-text">Liste des résultats</h1>
+        </div>
+        <ButtonGroup>
+          <Button>
+            <i className="fa fa-filter"></i>
+            Filtrer
+          </Button>
+          <Button>
+            <i className="fa fa-file-export"></i>
+            Export
+          </Button>
+          <Button>
+            <i className="fa fa-plus"></i>
+            Ajouter des résultats
+          </Button>
+        </ButtonGroup>
+      </Header>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>ORGANISATION</TableCell>
+            <TableCell>LIEU</TableCell>
+            <TableCell>ORGANISATEUR</TableCell>
+            <TableCell>NBR DE COMBATS</TableCell>
+            <TableCell>DATE</TableCell>
+            <TableCell>ACTIONS</TableCell>
           </TableRow>
-        ))}
-      </tbody>
-    </Table>
-    <Pagination>
-      <PageNumber className="active">1</PageNumber>
-      <PageNumber>2</PageNumber>
-    </Pagination>
-  </Container>
-);
+        </TableHead>
+        <tbody>
+          <TableRow>
+            <TableData>Champ. EBU</TableData>
+            <TableData>Palais des sports - Levallois</TableData>
+            <TableData>All Stars</TableData>
+            <TableData>8</TableData>
+            <TableData>4 Juil 2023</TableData>
+            <TableData>
+              <StatusButton status="En cours">En cours</StatusButton>
+            </TableData>
+          </TableRow>
+          <TableRow>
+            <TableData>La nuit des champions</TableData>
+            <TableData>Palais des sports - Levallois</TableData>
+            <TableData>All Stars</TableData>
+            <TableData>12</TableData>
+            <TableData>10 Juin 2023</TableData>
+            <TableData>
+              <StatusButton status="Voir les scores">Voir les scores</StatusButton>
+            </TableData>
+          </TableRow>
+          <TableRow>
+            <TableData>Champ. France BEA</TableData>
+            <TableData>Gym Jean Zay - Besançon</TableData>
+            <TableData>Local Boxe Club</TableData>
+            <TableData>28</TableData>
+            <TableData>2 Juin 2023</TableData>
+            <TableData>
+              <StatusButton status="Voir les scores">Voir les scores</StatusButton>
+            </TableData>
+          </TableRow>
+          <TableRow>
+            <TableData>Gala de prestige mixte</TableData>
+            <TableData>Gym Cavale Blanch - Brest</TableData>
+            <TableData>Ring Brestois</TableData>
+            <TableData>16</TableData>
+            <TableData>29 Mai 2023</TableData>
+            <TableData>
+              <StatusButton status="Voir les scores">Voir les scores</StatusButton>
+            </TableData>
+          </TableRow>
+        </tbody>
+      </Table>
+      <Pagination>
+        <PaginationButton disabled>{'<'}</PaginationButton>
+        <PaginationButton>1</PaginationButton>
+        <PaginationButton>2</PaginationButton>
+        <PaginationButton>{'>'}</PaginationButton>
+      </Pagination>
+    </Container>
+  );
+};
 
-export default SportResults;
+export default Results;
