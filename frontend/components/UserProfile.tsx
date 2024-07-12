@@ -161,13 +161,13 @@ const UserProfile: React.FC<ProfileCardProps> = ({
         </Balance>
         <Balance>
           <BalanceLabel>Votre NFT unique:</BalanceLabel>
-          {nftMetadata.image && (
+          {nftMetadata?.image && (
             <NFTImage src={nftMetadata.image} alt={nftMetadata.name} />
           )}
-          <p>{nftMetadata.name}</p>
-          <p>{nftMetadata.description}</p>
-          <p>{nftMetadata.tokenActivated ? "Activated" : "Not Activated"}</p>
-          <p>Subscription Periods: {nftMetadata.subscriptionPeriods.length}</p>
+          <p>{nftMetadata?.name}</p>
+          <p>{nftMetadata?.description}</p>
+          <p>{nftMetadata?.tokenActivated ? "Activated" : "Not Activated"}</p>
+          <p>Subscription Periods: {nftMetadata?.subscriptionPeriods.length}</p>
         </Balance>
          <Balance>
           <BalanceLabel>Votre solde FFB Community Token:</BalanceLabel>

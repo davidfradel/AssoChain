@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useWriteContract } from 'wagmi';
+import { contractAddress, contractAbi } from '../constants/index';
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -129,18 +131,18 @@ const DropdownItem = styled.a`
 `;
 
 const membersData = [
-  { id: 1, name: 'Emma Smith', email: 'smith@kpmg.com', status: 'Inactif', lastLogin: '22 Nov 2022, 10:10 pm' },
-  { id: 2, name: 'Melody Macy', email: 'melody@altibox.com', status: 'En attente', lastLogin: '10 Jul 2024, 6:05 pm' },
-  { id: 3, name: 'Max Smith', email: 'max@kt.com', status: 'En attente', lastLogin: '11 Jul 2024, 10:10 pm' },
-  { id: 4, name: 'Sean Bean', email: 'sean@delitto.com', status: 'Actif', lastLogin: '25 Oct 2023, 10:10 pm' },
-  { id: 5, name: 'Brian Cox', email: 'brian@exchange.com', status: 'Actif', lastLogin: '15 Apr 2024, 2:40 pm' },
-  { id: 6, name: 'Mikaela Collins', email: 'mik@pex.com', status: 'Actif', lastLogin: '10 Nov 2023, 10:10 pm' },
-  { id: 7, name: 'Francis Mitcham', email: 'f.mit@kpmg.com', status: 'Actif', lastLogin: '21 Feb 2024, 8:43 pm' },
-  { id: 8, name: 'Olivia Wild', email: 'olivia@corpmail.com', status: 'Actif', lastLogin: '04 Jul 2024, 5:30 pm' },
-  { id: 9, name: 'Neil Owen', email: 'owen.neil@gmail.com', status: 'Inactif', lastLogin: '23 Sep 2022, 9:23 pm' },
-  { id: 10, name: 'Dan Wilson', email: 'dan@consulting.com', status: 'Actif', lastLogin: '05 Jun 2024, 11:12 am' },
-  { id: 11, name: 'Emma Bold', email: 'emma@lintenso.com', status: 'Actif', lastLogin: '12 Oct 2023, 3:56 pm' },
-  { id: 12, name: 'Ana Crown', email: 'ana.cf@limtel.com', status: 'Actif', lastLogin: '10 Nov 2023, 10:10 pm' },
+  { id: 1, name: 'Emma Smith', email: 'smith@kpmg.com', status: 'Inactif', lastLogin: '22 Nov 2022, 10:10 pm', address: '0x1234567890'},
+  { id: 2, name: 'Pierre Durand', email: 'pierre.durand@gmail.com', status: 'En attente', lastLogin: '11 Jul 2024, 6:05 pm', address: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8' },
+  { id: 3, name: 'Claire Martin', email: 'claire.martin@hotmail.com', status: 'En attente', lastLogin: '10 Jul 2024, 10:10 pm', address: '0xBcd4042DE499D14e55001CcbB24a551F3b954096' },
+  { id: 4, name: 'Sean Bean', email: 'sean@delitto.com', status: 'Actif', lastLogin: '25 Oct 2023, 10:10 pm', address: '0x1234567890' },
+  { id: 5, name: 'Brian Cox', email: 'brian@exchange.com', status: 'Actif', lastLogin: '15 Apr 2024, 2:40 pm', address: '0x1234567890' },
+  { id: 6, name: 'Mikaela Collins', email: 'mik@pex.com', status: 'Actif', lastLogin: '10 Nov 2023, 10:10 pm', address: '0x1234567890' },
+  { id: 7, name: 'Francis Mitcham', email: 'f.mit@kpmg.com', status: 'Actif', lastLogin: '21 Feb 2024, 8:43 pm', address: '0x1234567890' },
+  { id: 8, name: 'Olivia Wild', email: 'olivia@corpmail.com', status: 'Actif', lastLogin: '04 Jul 2024, 5:30 pm', address: '0x1234567890' },
+  { id: 9, name: 'Neil Owen', email: 'owen.neil@gmail.com', status: 'Inactif', lastLogin: '23 Sep 2022, 9:23 pm', address: '0x1234567890' },
+  { id: 10, name: 'Dan Wilson', email: 'dan@consulting.com', status: 'Actif', lastLogin: '05 Jun 2024, 11:12 am', address: '0x1234567890' },
+  { id: 11, name: 'Emma Bold', email: 'emma@lintenso.com', status: 'Actif', lastLogin: '12 Oct 2023, 3:56 pm', address: '0x1234567890' },
+  { id: 12, name: 'Ana Crown', email: 'ana.cf@limtel.com', status: 'Actif', lastLogin: '10 Nov 2023, 10:10 pm', address: '0x1234567890' },
 ];
 
 const MemberList = () => {
@@ -148,12 +150,25 @@ const MemberList = () => {
 
   const sortedMembers = members.slice().sort((a, b) => new Date(b.lastLogin).getTime() - new Date(a.lastLogin).getTime());
 
-  const handleActivate = (id: number) => {
-    setMembers(members.map(member => member.id === id ? { ...member, status: 'Actif' } : member));
-  };
+  const { data : hash, error: writeError, writeContract } = useWriteContract();
 
   const handleDelete = (id: number) => {
     setMembers(members.filter(member => member.id !== id));
+  };
+
+  const handleActivate = async (id: number) => {
+    const member = members.find(member => member.id === id);
+    if (member) {
+      console.log('Activating user', member);
+      console.log('address', member.address);
+          await writeContract({
+            address: contractAddress,
+            abi: contractAbi,
+            functionName: 'activateUser',
+            args: [member.address],
+          });
+      setMembers(members.map(member => member.id === id ? { ...member, status: 'Actif' } : member));
+    }
   };
 
   return (

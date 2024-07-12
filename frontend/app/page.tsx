@@ -7,7 +7,7 @@ import UserAdminProfile from '@/components/UserAdminProfile';
 import UserProfile from '@/components/UserProfile';
 import { contractAddress, contractAbi } from '@/constants/index';
 import '@/styles/globals.css';
-import { Address, parseEther } from 'viem';
+import { Address, parseEther, formatUnits } from 'viem';
 import { Oval } from 'react-loader-spinner';
 
 import styled from 'styled-components';
@@ -69,12 +69,6 @@ export default function Home() {
     args: [currentAddress],
   });
 
-  const { data: newRegisterUser } = useReadContract({
-    ...contractConfig,
-    functionName: 'registerUser',
-  });
-
-
   const { data: userNFT } = useReadContract({
     ...contractConfig,
     functionName: 'getMetadata',
@@ -84,7 +78,7 @@ export default function Home() {
   const userData = userDataResponse as UserData;
   const nftMetadata = userNFT as NFTMetadata;
   if (nftMetadata?.image){
-    nftMetadata.image = nftMetadata.image.replace("ipfs://", "https://ipfs.io/ipfs/");
+    nftMetadata.image = nftMetadata?.image?.replace("ipfs://", "https://ipfs.io/ipfs/");
   }
 
   useEffect(() => {
@@ -93,7 +87,9 @@ export default function Home() {
       setIsVerified(userData.isActive);
     }
     if (tokenBalanceData) {
-      setTokenBalance(Number(tokenBalanceData));
+      const balanceInBigInt = BigInt(Number(tokenBalanceData));
+      const balanceInEther = formatUnits(balanceInBigInt, 18);
+      setTokenBalance(Number(balanceInEther));
     }
     setIsLoading(false);
   }, [userData, tokenBalanceData]);
@@ -177,7 +173,7 @@ export default function Home() {
       </div>
     );
   }
-console.log('isVerified:', isVerified)
+
   if(currentAddress === '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC') {
       return (
         <div className="flex">
