@@ -80,7 +80,7 @@ contract UserManagement is Ownable {
         // Activate the SBT token
         sbt.activateToken(tokenId);
         // Mint Community Tokens to the user
-        ctk.mint(userAddress, 20 * 10 ** 18);
+        ctk.mint(userAddress, 10 * 10 ** 18);
 
         emit UserActivated(userAddress);
     }

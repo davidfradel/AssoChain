@@ -43,7 +43,7 @@ describe("UserManagement", function () {
         const communityTokenAddress = await userManagement.ctk();
         const communityToken = await ethers.getContractAt("CommunityToken", communityTokenAddress);
         const addr1CommunityBalance = await communityToken.balanceOf(addr1.address);
-        expect(ethers.formatUnits(addr1CommunityBalance, 18)).to.equal("20.0");
+        expect(ethers.formatUnits(addr1CommunityBalance, 18)).to.equal("10.0");
     });
 
     it("Should disable a user correctly", async function () {
@@ -61,7 +61,7 @@ describe("UserManagement", function () {
         const communityTokenAddress = await userManagement.ctk();
         const communityToken = await ethers.getContractAt("CommunityToken", communityTokenAddress);
         const addr1CommunityBalance = await communityToken.balanceOf(addr1.address);
-        expect(ethers.formatUnits(addr1CommunityBalance, 18)).to.equal("40.0");
+        expect(ethers.formatUnits(addr1CommunityBalance, 18)).to.equal("30.0");
     });
 
     it("Should revert if activating a user not registered", async function () {
