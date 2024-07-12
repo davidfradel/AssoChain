@@ -16,8 +16,8 @@ import {
 } from "@tanstack/react-query";
 
 const config = getDefaultConfig({
-    appName: 'Project Voting',
-    projectId: '4b89f8ce0af198f46977dc74b4aaba58',
+    appName: 'AssoChain',
+    projectId: 'aac33d9edae39208cc75c3e675d78fed',
     chains: [hardhat,sepolia],
     ssr: true, 
 });

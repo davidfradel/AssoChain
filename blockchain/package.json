@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@nomicfoundation/hardhat-ignition": "^0.15.5",
     "@quant-finance/solidity-datetime": "^2.2.0",
     "axios": "^1.7.2",
     "dotenv": "^16.4.5"

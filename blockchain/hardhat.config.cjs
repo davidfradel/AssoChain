@@ -1,5 +1,6 @@
 require("@nomicfoundation/hardhat-chai-matchers");
 require("@nomicfoundation/hardhat-ignition-ethers");
+require("@nomicfoundation/hardhat-ignition");
 require("@nomicfoundation/hardhat-ethers");
 require("@nomicfoundation/hardhat-verify");
 require("@typechain/hardhat");
@@ -9,26 +10,12 @@ require('dotenv').config();
 
 const config = {
   solidity: "0.8.24",
-  networks: {
-    hardhat: {
-      chainId: 1337,
-    },
+    networks: {
+    hardhat: {},
     localhost: {
       url: "http://127.0.0.1:8545",
     },
-    arbitrumSepolia: {
-      url: 'https://sepolia-rollup.arbitrum.io/rpc',
-      chainId: 421614,
-      //accounts: [Sepolia_TESTNET_PRIVATE_KEY]
-    },
-    arbitrumOne: {
-      url: 'https://arb1.arbitrum.io/rpc',
-      //accounts: [ARBITRUM_MAINNET_TEMPORARY_PRIVATE_KEY]
-    },
   },
-   
 };
 
 module.exports = config;
-
-

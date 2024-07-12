@@ -1,18 +1,153 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import Sidebar from '@/components/Sidebar';
 import HomePage from '@/components/Homepage';
 import UserAdminProfile from '@/components/UserAdminProfile';
 import UserProfile from '@/components/UserProfile';
-import '../styles/globals.css';
+import { contractAddress, contractAbi } from '@/constants/index';
+import '@/styles/globals.css';
+import { Address, parseEther } from 'viem';
+import { Oval } from 'react-loader-spinner';
+
+import styled from 'styled-components';
+
+const StyledButton = styled.button`
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
+const contractConfig = {
+  address: contractAddress as Address,
+  abi: contractAbi
+};
+
+const adminAddress = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
+
+interface UserData {
+    isActive: boolean,
+    isRegistered: boolean,
+    membershipExpiry: string,
+    userAddress: string
+}
+
+interface NFTMetadata {
+  name: string;
+  description: string;
+  image: string;
+  tokenActivated: boolean;
+  subscriptionPeriods: Array<any>;
+}
 
 export default function Home() {
-  const { isConnected, address: currentAddress } = useAccount();
-  console.log('isConnected', isConnected)
-    console.log('currentAddress', currentAddress)
+ const { isConnected, address: currentAddress } = useAccount();
+  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [isRegistered, setIsRegistered] = useState<boolean>(false);
+  const [isVerified, setIsVerified] = useState(false);
 
-   if (isConnected && currentAddress === '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266') {
+  const { data : hash, error: writeError, writeContract } = useWriteContract();
+  
+  const { data: userDataResponse } = useReadContract({
+    ...contractConfig,
+    functionName: 'getUser',
+    args: [currentAddress],
+  });
+
+  const { data: tokenBalanceData } = useReadContract({
+    ...contractConfig,
+    functionName: 'getCommunityTokenBalance',
+    args: [currentAddress],
+  });
+
+  const { data: newRegisterUser } = useReadContract({
+    ...contractConfig,
+    functionName: 'registerUser',
+  });
+
+
+  const { data: userNFT } = useReadContract({
+    ...contractConfig,
+    functionName: 'getMetadata',
+    args: [currentAddress],
+  });
+
+  const userData = userDataResponse as UserData;
+  const nftMetadata = userNFT as NFTMetadata;
+  if (nftMetadata?.image){
+    nftMetadata.image = nftMetadata.image.replace("ipfs://", "https://ipfs.io/ipfs/");
+  }
+
+  useEffect(() => {
+    if (userData) {
+      setIsRegistered(userData.isRegistered);
+      setIsVerified(userData.isActive);
+    }
+    if (tokenBalanceData) {
+      setTokenBalance(Number(tokenBalanceData));
+    }
+    setIsLoading(false);
+  }, [userData, tokenBalanceData]);
+
+  const handleRegister = async () => {
+    try {
+
+        await writeContract({
+        address: contractAddress,
+        abi: contractAbi,
+        functionName: 'registerUser',
+        args: ["FFB-Member", "Unique NFT by member", "ipfs://QmZDnxHF578BY3Rc5PnsyUGXgxurAJFMVPQ6unDjnLvznP"],
+        value: parseEther('0.001')
+      });
+
+      setIsRegistered(true);
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      setError(err);
+    }
+  };
+
+ if (isLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <Oval
+          height={80}
+          width={80}
+          color="#1F2937"
+          wrapperStyle={{}}
+          wrapperClass=""
+          visible={true}
+          ariaLabel='oval-loading'
+          secondaryColor="#1F2937"
+          strokeWidth={2}
+          strokeWidthSecondary={2}
+        />
+      </div>
+    );
+  }
+
+   if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
+  if (!isConnected) {
+    return <HomePage />;
+  }
+
+   if (currentAddress === adminAddress) {
     return (
       <div className="flex">
         <Sidebar />
@@ -23,7 +158,7 @@ export default function Home() {
             role="Secrétaire"
             location="Lyon"
             email="max@kt.com"
-            fbbCommunityToken={0}
+            fbbCommunityToken={Number(tokenBalance) || 0}
             documentsInProgress={80}
             documentsOnChain={60}
             profileCompletion={60}
@@ -31,43 +166,51 @@ export default function Home() {
         </div>
       </div>
     );
-  } else if(isConnected && currentAddress !== '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266') {
-      return (
-          <div className="flex">
-            <div className="flex-grow p-6">
-              <UserProfile
-                avatar="https://i.pravatar.cc/?img=26"
-                name="Claire Martin"
-                role="Adhérent(e)"
-                location="Villefranche-sur-Saône"
-                email="claire.martin@hotmail.com"
-                fbbCommunityToken={3423243}
-                nftImageUrl="https://i.pravatar.cc/150?img=3"
-              />
-        </div>
-      </div>
-    );
-    } else if(isConnected && currentAddress !== '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC') {
-      return (
-          <div className="flex">
-            <div className="flex-grow p-6">
-              <UserProfile
-                avatar="https://i.pravatar.cc/?img=60"
-                name="Pierre Durand"
-                role="Adhérent(e)"
-                location="Lyon"
-                email="pierre.durand@gmail.com"
-                fbbCommunityToken={3423243}
-                nftImageUrl="https://i.pravatar.cc/60?img=3"
-              />
-        </div>
-      </div>
-    );
-  } else {
+  }
+
+  if (!isRegistered) {
     return (
-      <>
-        <HomePage />
-      </>
+      <div className="flex flex-col justify-center items-center h-[80vh]">
+        <h2 className="mb-12">Bienvenue ! 🥊</h2>
+        <p className="mb-12">Vous n&apos;êtes pas adhérent(e), faites votre demande ci-dessous.</p>
+           <StyledButton onClick={handleRegister}>Faire ma demande</StyledButton>
+      </div>
     );
   }
+console.log('isVerified:', isVerified)
+  if(currentAddress === '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC') {
+      return (
+        <div className="flex">
+          <div className="flex-grow p-6">
+            <UserProfile
+              avatar="https://i.pravatar.cc/?img=26"
+              name="Claire Martin"
+              role="Adhérent(e)"
+              location="Villefranche-sur-Saône"
+              email="claire.martin@hotmail.com"
+              fbbCommunityToken={tokenBalance || 0}
+              nftMetadata={nftMetadata}
+              isVerified={isVerified}
+            />
+          </div>
+        </div>
+      );
+   }
+
+  return (
+    <div className="flex">
+      <div className="flex-grow p-6">
+        <UserProfile
+          avatar="https://i.pravatar.cc/?img=60"
+          name="Pierre Durand"
+          role="Adhérent(e)"
+          location="Lyon"
+          email="pierre.durand@gmail.com"
+          fbbCommunityToken={tokenBalance || 0}
+          nftMetadata={nftMetadata}
+          isVerified={isVerified}
+        />
+      </div>
+    </div>
+  );
 }

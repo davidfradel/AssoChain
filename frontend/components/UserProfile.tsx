@@ -1,7 +1,8 @@
+import React from 'react';
 import styled from 'styled-components';
 import { FaCheckCircle, FaEnvelope, FaWallet } from 'react-icons/fa';
 import { MdLocationOn } from 'react-icons/md';
-import { useAccount, useBalance, useEnsName } from 'wagmi';
+import { useAccount, useBalance } from 'wagmi';
 
 const Card = styled.div`
   display: flex;
@@ -90,6 +91,19 @@ const NFTImage = styled.img`
   margin-top: 20px;
 `;
 
+const VerificationMessage = styled.p`
+  color: red;
+  margin-top: 10px;
+`;
+
+interface NFTMetadata {
+  name: string;
+  description: string;
+  image: string;
+  tokenActivated: boolean;
+  subscriptionPeriods: Array<any>;
+}
+
 interface ProfileCardProps {
   avatar: string;
   name: string;
@@ -97,7 +111,8 @@ interface ProfileCardProps {
   location: string;
   email: string;
   fbbCommunityToken: number;
-  nftImageUrl: string;
+  nftMetadata: NFTMetadata;
+  isVerified: boolean;
 }
 
 const UserProfile: React.FC<ProfileCardProps> = ({
@@ -107,7 +122,8 @@ const UserProfile: React.FC<ProfileCardProps> = ({
   location,
   email,
   fbbCommunityToken,
-  nftImageUrl
+  nftMetadata,
+  isVerified
 }) => {
   const { address } = useAccount();
   const { data: balance } = useBalance({ address });
@@ -118,8 +134,9 @@ const UserProfile: React.FC<ProfileCardProps> = ({
         <Avatar src={avatar} alt={`${name}'s avatar`} />
         <Info>
           <Name>
-            {name} <FaCheckCircle style={{ marginLeft: 5, color: 'SkyBlue' }} />
+            {name} <FaCheckCircle style={{ marginLeft: 5, color: isVerified ? 'SkyBlue' : 'grey' }} />
           </Name>
+          {!isVerified && <VerificationMessage>Votre compte est en cours de validation. Quand la pastille à coté de votre nom sera bleue, votre compte sera validé.</VerificationMessage>}
           <Details>
             <DetailItem>{role}</DetailItem>
             <DetailItem>
@@ -143,18 +160,20 @@ const UserProfile: React.FC<ProfileCardProps> = ({
           <BalanceValue>{balance?.formatted} ETH</BalanceValue>
         </Balance>
         <Balance>
+          <BalanceLabel>Votre NFT unique:</BalanceLabel>
+          {nftMetadata.image && (
+            <NFTImage src={nftMetadata.image} alt={nftMetadata.name} />
+          )}
+          <p>{nftMetadata.name}</p>
+          <p>{nftMetadata.description}</p>
+          <p>{nftMetadata.tokenActivated ? "Activated" : "Not Activated"}</p>
+          <p>Subscription Periods: {nftMetadata.subscriptionPeriods.length}</p>
+        </Balance>
+         <Balance>
           <BalanceLabel>Votre solde FFB Community Token:</BalanceLabel>
           <BalanceValue>{fbbCommunityToken} FFB</BalanceValue>
         </Balance>
-         <Balance>
-          <BalanceLabel>Votre NFT unique:</BalanceLabel>
-          <BalanceValue> {nftImageUrl && (
-              <NFTImage src={nftImageUrl} alt="NFT" />
-            )}
-      </BalanceValue>
-        </Balance>
       </WalletInfo>
-     
     </Card>
   );
 };
