@@ -8,6 +8,7 @@ import {
 import { WagmiProvider } from 'wagmi';
 import {
   hardhat,
+  arbitrumSepolia,
   sepolia
 } from 'wagmi/chains';
 import {
@@ -18,7 +19,7 @@ import {
 const config = getDefaultConfig({
     appName: 'AssoChain',
     projectId: 'aac33d9edae39208cc75c3e675d78fed',
-    chains: [hardhat,sepolia],
+    chains: [hardhat,arbitrumSepolia, sepolia],
     ssr: true, 
 });
 

@@ -32,8 +32,6 @@ const contractConfig = {
   abi: contractAbi
 };
 
-const adminAddress = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
-
 interface UserData {
     isActive: boolean,
     isRegistered: boolean,
@@ -82,6 +80,9 @@ export default function Home() {
   if (nftMetadata?.image){
     nftMetadata.image = nftMetadata?.image?.replace("ipfs://", "https://ipfs.io/ipfs/");
   }
+
+  const adminAddresses = ['0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', '0x5FbDB2315678afecb367f032d93F642f64180aa3'];
+  const group1Addresses = ['0xBcd4042DE499D14e55001CcbB24a551F3b954096', '0x5a66Ea46499203e729a6E88B92839dE59f6bCFb9'];
 
   useEffect(() => {
     if (userData) {
@@ -141,7 +142,7 @@ export default function Home() {
     return <HomePage />;
   }
 
-   if (currentAddress === adminAddress) {
+  if (adminAddresses.includes(currentAddress ?? "")) {
     return (
       <div className="flex">
         <Sidebar />
@@ -172,7 +173,7 @@ export default function Home() {
     );
   }
 
-  if(currentAddress === '0xBcd4042DE499D14e55001CcbB24a551F3b954096') {
+  if(group1Addresses.includes(currentAddress ?? "")) {
       return (
         <div className="flex">
           <div className="flex-grow p-6">
