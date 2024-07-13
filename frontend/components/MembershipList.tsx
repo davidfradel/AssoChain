@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useWriteContract } from 'wagmi';
+import React, { useEffect, useState } from 'react';
+import { useWriteContract, useReadContract } from 'wagmi';
 import { contractAddress, contractAbi } from '../constants/index';
 import styled from 'styled-components';
 
@@ -145,13 +145,37 @@ const membersData = [
   { id: 12, name: 'Ana Crown', email: 'ana.cf@limtel.com', status: 'Actif', lastLogin: '10 Nov 2023, 10:10 pm', address: '0x1234567890' },
 ];
 
+interface UserData {
+    isActive: boolean,
+    isRegistered: boolean,
+    membershipExpiry: string,
+    userAddress: string
+}
+
 const MemberList = () => {
   const [members, setMembers] = useState(membersData);
+  const [member, setMember] = useState("0x1234567890");
 
   const sortedMembers = members.slice().sort((a, b) => new Date(b.lastLogin).getTime() - new Date(a.lastLogin).getTime());
 
   const { data : hash, error: writeError, writeContract } = useWriteContract();
 
+  const { data: userDataResponse } = useReadContract({
+    address: contractAddress,
+    abi: contractAbi,
+    functionName: 'getUser',
+    args: [member],
+  });
+
+  const userData = userDataResponse as UserData;
+
+  useEffect(() => {
+    if (userData) {
+      setMember(userData.userAddress);
+      setMembers(members.map(member => member.address === userData.userAddress ? { ...member, status: 'Actif' } : member));
+    }
+  }, [userData, member, members]);
+  
   const handleDelete = (id: number) => {
     setMembers(members.filter(member => member.id !== id));
   };
@@ -159,15 +183,15 @@ const MemberList = () => {
   const handleActivate = async (id: number) => {
     const member = members.find(member => member.id === id);
     if (member) {
-      console.log('Activating user', member);
-      console.log('address', member.address);
+      
           await writeContract({
             address: contractAddress,
             abi: contractAbi,
             functionName: 'activateUser',
             args: [member.address],
           });
-      setMembers(members.map(member => member.id === id ? { ...member, status: 'Actif' } : member));
+
+          setTimeout(() => { setMember(member.address); }, 5000);
     }
   };
 

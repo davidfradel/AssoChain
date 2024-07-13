@@ -9,6 +9,8 @@ import { contractAddress, contractAbi } from '@/constants/index';
 import '@/styles/globals.css';
 import { Address, parseEther, formatUnits } from 'viem';
 import { Oval } from 'react-loader-spinner';
+import dotenv from 'dotenv';
+dotenv.config({ path: '../.env' });
 
 import styled from 'styled-components';
 
@@ -56,7 +58,7 @@ export default function Home() {
   const [isVerified, setIsVerified] = useState(false);
 
   const { data : hash, error: writeError, writeContract } = useWriteContract();
-  
+
   const { data: userDataResponse } = useReadContract({
     ...contractConfig,
     functionName: 'getUser',
@@ -92,7 +94,7 @@ export default function Home() {
       setTokenBalance(Number(balanceInEther));
     }
     setIsLoading(false);
-  }, [userData, tokenBalanceData]);
+  }, [userData, tokenBalanceData, isLoading]);
 
   const handleRegister = async () => {
     try {
@@ -105,7 +107,7 @@ export default function Home() {
         value: parseEther('0.001')
       });
 
-      setIsRegistered(true);
+      setIsLoading(true);
     } catch (err: any) {
       console.error('Registration error:', err);
       setError(err);
@@ -129,10 +131,6 @@ export default function Home() {
         />
       </div>
     );
-  }
-
-   if (isLoading) {
-    return <div>Loading...</div>;
   }
 
   if (error) {
@@ -174,7 +172,7 @@ export default function Home() {
     );
   }
 
-  if(currentAddress === '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC') {
+  if(currentAddress === '0xBcd4042DE499D14e55001CcbB24a551F3b954096') {
       return (
         <div className="flex">
           <div className="flex-grow p-6">
