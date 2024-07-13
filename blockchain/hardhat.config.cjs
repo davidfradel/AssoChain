@@ -27,6 +27,13 @@ const config = {
       url: `https://sepolia.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
       accounts: [process.env.PRIVATE_KEY_ADMIN],
     },
+    arbitrumSepolia: {
+      url: `https://arbitrum-sepolia.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+      accounts: [process.env.PRIVATE_KEY_ADMIN],
+      chainId: 421614, // Corrected Chain ID for Arbitrum Sepolia
+      gas: "auto",
+      gasPrice: "auto",
+    },
   },
 };
 
