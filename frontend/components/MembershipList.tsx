@@ -132,8 +132,8 @@ const DropdownItem = styled.a`
 
 const membersData = [
   { id: 1, name: 'Emma Smith', email: 'smith@kpmg.com', status: 'Inactif', lastLogin: '22 Nov 2022, 10:10 pm', address: '0x1234567890'},
-  { id: 2, name: 'Pierre Durand', email: 'pierre.durand@gmail.com', status: 'En attente', lastLogin: '11 Jul 2024, 6:05 pm', address: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8' },
-  { id: 3, name: 'Claire Martin', email: 'claire.martin@hotmail.com', status: 'En attente', lastLogin: '10 Jul 2024, 10:10 pm', address: '0xBcd4042DE499D14e55001CcbB24a551F3b954096' },
+  { id: 2, name: 'Pierre Durand', email: 'pierre.durand@gmail.com', status: 'En attente', lastLogin: '11 Jul 2024, 6:05 pm', address: '0x5a66Ea46499203e729a6E88B92839dE59f6bCFb9' },
+  { id: 3, name: 'Claire Martin', email: 'claire.martin@hotmail.com', status: 'En attente', lastLogin: '10 Jul 2024, 10:10 pm', address: '0x8176E3d16E7C4cAa2837aA44900c60601dE3346A' },
   { id: 4, name: 'Sean Bean', email: 'sean@delitto.com', status: 'Actif', lastLogin: '25 Oct 2023, 10:10 pm', address: '0x1234567890' },
   { id: 5, name: 'Brian Cox', email: 'brian@exchange.com', status: 'Actif', lastLogin: '15 Apr 2024, 2:40 pm', address: '0x1234567890' },
   { id: 6, name: 'Mikaela Collins', email: 'mik@pex.com', status: 'Actif', lastLogin: '10 Nov 2023, 10:10 pm', address: '0x1234567890' },
