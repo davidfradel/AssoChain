@@ -35,8 +35,11 @@ contract UserManagement is Ownable {
      * @dev Constructor that deploys SoulBoundToken and CommunityToken.
      * @param initialSupply The initial supply of the CommunityToken.
      */
-    constructor(uint256 initialSupply) Ownable(msg.sender) {
-        sbt = new SoulBoundToken();
+    constructor(
+        string memory baseURI,
+        uint256 initialSupply
+    ) Ownable(msg.sender) {
+        sbt = new SoulBoundToken(baseURI);
         ctk = new CommunityToken(initialSupply);
     }
     /**

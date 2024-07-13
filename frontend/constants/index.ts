@@ -1,7 +1,12 @@
-export const contractAddress = "0xFFdd52783E7577cC354D838D140f96C7A3Ad7a6B";
+export const contractAddress = "0xBA719270c0Fbc3c9B569F71f79647F3Ffb6f8dD0";
 export const contractAbi = [
     {
       "inputs": [
+        {
+          "internalType": "string",
+          "name": "baseURI",
+          "type": "string"
+        },
         {
           "internalType": "uint256",
           "name": "initialSupply",
@@ -537,4 +542,4 @@ export const contractAbi = [
       "stateMutability": "nonpayable",
       "type": "function"
     }
-  ]
+  ];

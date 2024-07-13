@@ -8,9 +8,10 @@ describe("UserManagement", function () {
         [owner, addr1, addr2, addr3] = await ethers.getSigners();
 
         const UserManagement = await ethers.getContractFactory("UserManagement");
+        const baseURI = "ipfs://Qm...";
         const initialSupply = ethers.parseUnits("1000000", 18);
         
-        userManagement = await UserManagement.deploy(initialSupply);
+        userManagement = await UserManagement.deploy(baseURI, initialSupply);
         await userManagement.waitForDeployment();
         
         console.log("UserManagement deployed to:", userManagement.target);

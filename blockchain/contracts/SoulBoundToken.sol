@@ -29,10 +29,16 @@ contract SoulBoundToken is ERC721, Ownable {
     mapping(uint256 => Metadata) private _tokenMetadata;
     mapping(uint256 => address) private _tokenOwners;
 
+    string private _baseTokenURI;
+
     /**
      * @dev Constructor that sets the token name and symbol.
      */
-    constructor() ERC721("FFB-Member", "ACB") Ownable(msg.sender) {}
+    constructor(
+        string memory baseURI
+    ) ERC721("FFB-Member", "ACB") Ownable(msg.sender) {
+        _baseTokenURI = baseURI;
+    }
 
     /**
      * @dev Mints a new token.
@@ -220,5 +226,17 @@ contract SoulBoundToken is ERC721, Ownable {
         bytes memory
     ) public pure override {
         revert("Soul Bound Token cannot be transferred");
+    }
+
+    /**
+     * @dev Returns the metadata URI for a given token ID.
+     * @param tokenId The ID of the token to get the metadata URI for.
+     * @return string The metadata URI.
+     */
+    function tokenURI(
+        uint256 tokenId
+    ) public view override returns (string memory) {
+        require(tokenExists(tokenId), "Token does not exist");
+        return string.concat(_baseTokenURI, Strings.toString(tokenId));
     }
 }
