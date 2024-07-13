@@ -6,7 +6,15 @@ require("@nomicfoundation/hardhat-verify");
 require("@typechain/hardhat");
 require("solidity-coverage");
 
-require('dotenv').config();
+require('dotenv').config({path: '../.env'});
+
+if(!process.env.INFURA_PROJECT_ID) {
+  throw new Error("Please set your INFURA_PROJECT_ID in a .env file");
+} 
+
+if(!process.env.PRIVATE_KEY_ADMIN) {
+  throw new Error("Please set your PRIVATE_KEY_ADMIN in a .env file");
+}
 
 const config = {
   solidity: "0.8.24",
@@ -14,6 +22,10 @@ const config = {
     hardhat: {},
     localhost: {
       url: "http://127.0.0.1:8545",
+    },
+    sepolia: {
+      url: `https://sepolia.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
+      accounts: [process.env.PRIVATE_KEY_ADMIN],
     },
   },
 };
