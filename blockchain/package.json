@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "lint": "solhint 'contracts/**/*.sol'"
+    "lint": "solhint 'contracts/**/*.sol'",
+    "prepare": "husky"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-ignition": "^0.15.5",
