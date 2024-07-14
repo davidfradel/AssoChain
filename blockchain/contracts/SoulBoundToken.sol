@@ -63,6 +63,8 @@ contract SoulBoundToken is IERC721, ERC721URIStorage, Ownable {
 
         Metadata storage metadata = _tokenMetadata[tokenId];
         metadata.name = "FFB-Member";
+        metadata
+            .image = "ipfs://QmZDnxHF578BY3Rc5PnsyUGXgxurAJFMVPQ6unDjnLvznP";
         metadata.description = "Unique NFT by member";
         metadata.tokenActivated = false;
 
