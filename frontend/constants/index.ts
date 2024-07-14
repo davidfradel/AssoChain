@@ -1,12 +1,7 @@
-export const contractAddress = "0xBA719270c0Fbc3c9B569F71f79647F3Ffb6f8dD0";
+export const contractAddress = "0x2e203AFE8fF518F67c14ebfEf8590c4DDB42e08E";
 export const contractAbi = [
     {
       "inputs": [
-        {
-          "internalType": "string",
-          "name": "baseURI",
-          "type": "string"
-        },
         {
           "internalType": "uint256",
           "name": "initialSupply",
@@ -203,6 +198,11 @@ export const contractAbi = [
             },
             {
               "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
               "name": "membershipExpiry",
               "type": "uint256"
             }
@@ -300,12 +300,12 @@ export const contractAbi = [
           "type": "address"
         }
       ],
-      "name": "getOwnerOf",
+      "name": "getSubscriptionEndTime",
       "outputs": [
         {
-          "internalType": "address",
+          "internalType": "uint256",
           "name": "",
-          "type": "address"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -319,12 +319,12 @@ export const contractAbi = [
           "type": "address"
         }
       ],
-      "name": "getSubscriptionEndTime",
+      "name": "getTokenURI",
       "outputs": [
         {
-          "internalType": "uint256",
+          "internalType": "string",
           "name": "",
-          "type": "uint256"
+          "type": "string"
         }
       ],
       "stateMutability": "view",
@@ -356,6 +356,11 @@ export const contractAbi = [
               "internalType": "bool",
               "name": "isActive",
               "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
             },
             {
               "internalType": "uint256",
@@ -435,23 +440,7 @@ export const contractAbi = [
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "name",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "description",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "image",
-          "type": "string"
-        }
-      ],
+      "inputs": [],
       "name": "registerUser",
       "outputs": [],
       "stateMutability": "payable",
