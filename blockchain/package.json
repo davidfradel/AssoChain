@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "lint": "solhint 'contracts/**/*.sol'"
+  },
   "dependencies": {
     "@nomicfoundation/hardhat-ignition": "^0.15.5",
     "@pinata/sdk": "^2.1.0",
@@ -13,6 +16,7 @@
     "@openzeppelin/contracts": "^5.0.2",
     "chai": "^4.4.1",
     "ethers": "^6.13.1",
-    "hardhat": "^2.22.6"
+    "hardhat": "^2.22.6",
+    "solhint": "^5.0.1"
   }
 }

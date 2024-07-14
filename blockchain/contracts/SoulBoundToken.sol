@@ -4,15 +4,15 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@quant-finance/solidity-datetime/contracts/DateTime.sol";
-import "hardhat/console.sol";
 
 /**
  * @title SoulBoundToken
  * @dev ERC721 Token representing a Soul Bound Token with metadata and subscription periods.
  * Only the owner can mint and manage tokens.
  */
-contract SoulBoundToken is IERC721, ERC721URIStorage, Ownable {
+contract SoulBoundToken is IERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
     using DateTime for uint256;
 
     struct SubscriptionPeriod {
@@ -53,7 +53,9 @@ contract SoulBoundToken is IERC721, ERC721URIStorage, Ownable {
      * @dev Mints a new token.
      * @param to The address that will own the minted token.
      */
-    function mint(address to) external onlyOwner returns (uint256) {
+    function mint(
+        address to
+    ) external onlyOwner nonReentrant returns (uint256) {
         require(to != address(0), "Invalid address");
 
         uint256 tokenId = _currentTokenId;
@@ -78,7 +80,7 @@ contract SoulBoundToken is IERC721, ERC721URIStorage, Ownable {
      * @dev Activates a token.
      * @param tokenId The ID of the token to activate.
      */
-    function activateToken(uint256 tokenId) external onlyOwner {
+    function activateToken(uint256 tokenId) external onlyOwner nonReentrant {
         require(tokenExists(tokenId), "Token does not exist");
 
         _tokenMetadata[tokenId].tokenActivated = true;

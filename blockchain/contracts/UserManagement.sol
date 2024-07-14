@@ -4,7 +4,6 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./SoulBoundToken.sol";
 import "./FFBCommunityToken.sol";
-import "hardhat/console.sol";
 
 /**
  * @title UserManagement
