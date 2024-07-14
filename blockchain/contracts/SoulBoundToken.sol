@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@quant-finance/solidity-datetime/contracts/DateTime.sol";
+import "hardhat/console.sol";
 
 /**
  * @title SoulBoundToken
  * @dev ERC721 Token representing a Soul Bound Token with metadata and subscription periods.
  * Only the owner can mint and manage tokens.
  */
-contract SoulBoundToken is ERC721, Ownable {
+contract SoulBoundToken is IERC721, ERC721URIStorage, Ownable {
     using DateTime for uint256;
 
     struct SubscriptionPeriod {
@@ -27,44 +29,47 @@ contract SoulBoundToken is ERC721, Ownable {
     }
 
     mapping(uint256 => Metadata) private _tokenMetadata;
-    mapping(uint256 => address) private _tokenOwners;
-
+    uint256[] private _allTokenIds;
+    uint256 private _currentTokenId;
     string private _baseTokenURI;
+
+    event TokenMinted(address indexed to, uint256 indexed tokenId);
+    event TokenActivated(uint256 indexed tokenId);
+    event SubscriptionRenewed(uint256 indexed tokenId, uint256 newEndTime);
 
     /**
      * @dev Constructor that sets the token name and symbol.
      */
-    constructor(
-        string memory baseURI
-    ) ERC721("FFB-Member", "ACB") Ownable(msg.sender) {
-        _baseTokenURI = baseURI;
+    constructor() ERC721("FFB-Member", "ACB") Ownable(msg.sender) {
+        _baseTokenURI = "ipfs://QmPuJwk1k94rV2p7P1P2ZzY5ZUfpu588RCQ1Z7akMrAC4g";
+        _currentTokenId = 1;
+    }
+
+    function _baseURI() internal view virtual override returns (string memory) {
+        return _baseTokenURI;
     }
 
     /**
      * @dev Mints a new token.
      * @param to The address that will own the minted token.
-     * @param name The name of the token.
-     * @param description The description of the token.
-     * @param image The image URI of the token.
      */
-    function mint(
-        address to,
-        string memory name,
-        string memory description,
-        string memory image
-    ) external onlyOwner {
+    function mint(address to) external onlyOwner returns (uint256) {
         require(to != address(0), "Invalid address");
-        uint256 tokenId = uint256(uint160(to));
-        if (_tokenOwners[tokenId] == address(0)) {
-            _mint(to, tokenId);
-            _tokenOwners[tokenId] = to;
-        }
+
+        uint256 tokenId = _currentTokenId;
+        _currentTokenId += 1;
+
+        _mint(to, tokenId);
+
         Metadata storage metadata = _tokenMetadata[tokenId];
-        metadata.name = name;
-        metadata.description = description;
-        metadata.image = image;
+        metadata.name = "FFB-Member";
+        metadata.description = "Unique NFT by member";
         metadata.tokenActivated = false;
-        // Initialize subscription periods as an empty array
+
+        _allTokenIds.push(tokenId); // Add token to list of all token IDs
+
+        emit TokenMinted(to, tokenId);
+        return tokenId;
     }
 
     /**
@@ -76,6 +81,7 @@ contract SoulBoundToken is ERC721, Ownable {
 
         _tokenMetadata[tokenId].tokenActivated = true;
         addSubscriptionPeriod(tokenId, block.timestamp);
+        emit TokenActivated(tokenId);
     }
 
     /**
@@ -174,45 +180,27 @@ contract SoulBoundToken is ERC721, Ownable {
     }
 
     /**
-     * @dev Checks if the contract supports a given interface.
-     * @param interfaceId The interface ID to check.
-     * @return bool True if the interface is supported, false otherwise.
-     */
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override(ERC721) returns (bool) {
-        return super.supportsInterface(interfaceId);
-    }
-
-    /**
      * @dev Checks if a token exists.
      * @param tokenId The ID of the token to check.
      * @return bool True if the token exists, false otherwise.
      */
     function tokenExists(uint256 tokenId) internal view returns (bool) {
-        return _tokenOwners[tokenId] != address(0);
-    }
-
-    /**
-     * @dev Gets the owner of a token.
-     * @param tokenId The ID of the token to get the owner for.
-     * @return address The owner of the token.
-     */
-    function ownerOf(uint256 tokenId) public view override returns (address) {
-        if (!tokenExists(tokenId)) {
-            return address(0);
+        for (uint256 i = 0; i < _allTokenIds.length; i++) {
+            if (_allTokenIds[i] == tokenId) {
+                return true;
+            }
         }
-        return _tokenOwners[tokenId];
+        return false;
     }
 
     /**
      * @dev Prevents the transfer of tokens.
      */
     function transferFrom(
-        address,
-        address,
-        uint256
-    ) public pure override(ERC721) {
+        address from,
+        address to,
+        uint256 tokenId
+    ) public pure override(ERC721, IERC721) {
         revert("Soul Bound Token cannot be transferred");
     }
 
@@ -224,7 +212,7 @@ contract SoulBoundToken is ERC721, Ownable {
         address,
         uint256,
         bytes memory
-    ) public pure override {
+    ) public pure override(ERC721, IERC721) {
         revert("Soul Bound Token cannot be transferred");
     }
 

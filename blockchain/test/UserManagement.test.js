@@ -8,10 +8,9 @@ describe("UserManagement", function () {
         [owner, addr1, addr2, addr3] = await ethers.getSigners();
 
         const UserManagement = await ethers.getContractFactory("UserManagement");
-        const baseURI = "ipfs://Qm...";
         const initialSupply = ethers.parseUnits("1000000", 18);
         
-        userManagement = await UserManagement.deploy(baseURI, initialSupply);
+        userManagement = await UserManagement.deploy(initialSupply);
         await userManagement.waitForDeployment();
         
         console.log("UserManagement deployed to:", userManagement.target);
@@ -26,11 +25,7 @@ describe("UserManagement", function () {
     });
 
     it("Should register a user and mint tokens correctly", async function () {
-        const name = "User Name";
-        const description = "User Description";
-        const image = "ipfs://Qm...";
-
-        await userManagement.connect(addr1).registerUser(name, description, image, { value: ethers.parseUnits("0.001", 18) });
+        await userManagement.connect(addr1).registerUser({ value: ethers.parseUnits("0.001", 18) });
         const user = await userManagement.getUser(addr1.address);
         expect(user.isRegistered).to.equal(true);
     });
@@ -77,16 +72,6 @@ describe("UserManagement", function () {
         await expect(userManagement.updateMembership(addr2.address)).to.be.revertedWith("User not registered");
     });
 
-    it("Should return zero address for non-existent token in getOwnerOf", async function () {
-        const owner = await userManagement.getOwnerOf(addr2.address);
-        expect(owner).to.equal(ethers.ZeroAddress);
-    });
-
-    it("Should return an address for existent token in getOwnerOf", async function () {
-        const owner = await userManagement.getOwnerOf(addr1.address);
-        expect(owner).to.equal(addr1.address);
-    });
-
     it("Should handle registration fee update correctly", async function () {
         const newFee = ethers.parseUnits("0.002", 18);
         await userManagement.updateRegistrationFee(newFee);
@@ -94,14 +79,10 @@ describe("UserManagement", function () {
     });
 
     it("Should handle membership fee update correctly", async function () {
-        const name = "User Name 2";
-        const description = "User Description 2";
-        const image = "ipfs://Qm...";
-
-        await userManagement.connect(addr2).registerUser(name, description, image, { value: ethers.parseUnits("0.002", 18) });
+        await userManagement.connect(addr2).registerUser({ value: ethers.parseUnits("0.002", 18) });
         await userManagement.connect(owner).activateUser(addr2.address);
 
-        await userManagement.connect(addr3).registerUser(name, description, image, { value: ethers.parseUnits("0.002", 18) });
+        await userManagement.connect(addr3).registerUser({ value: ethers.parseUnits("0.002", 18) });
         await userManagement.connect(owner).activateUser(addr3.address);
 
         const users = await userManagement.getAllUsers();
@@ -146,7 +127,19 @@ describe("UserManagement", function () {
 
     it("Should get the metadata of a user", async function () {
         const metadata = await userManagement.getMetadata(addr1.address);
-        expect(metadata.name).to.equal("User Name");
-        expect(metadata.description).to.equal("User Description");
+        expect(metadata.name).to.equal("FFB-Member");
+        expect(metadata.description).to.equal("Unique NFT by member");
     });
+
+    it("Should get the tokenURI if it exists", async function () {
+        const tokenURI = await userManagement.getTokenURI(addr1.address);
+        expect(tokenURI).to.equal("ipfs://QmPuJwk1k94rV2p7P1P2ZzY5ZUfpu588RCQ1Z7akMrAC4g1");
+    });
+
+    it("Should not get the not exist tokenURI", async function () {
+        await expect(userManagement.getTokenURI(owner.address)).to.be.revertedWith("Token does not exist");
+    });
+
+   
+
 });

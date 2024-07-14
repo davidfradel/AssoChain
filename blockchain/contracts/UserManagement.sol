@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./SoulBoundToken.sol";
 import "./FFBCommunityToken.sol";
+import "hardhat/console.sol";
 
 /**
  * @title UserManagement
@@ -14,6 +15,7 @@ contract UserManagement is Ownable {
         address userAddress;
         bool isRegistered;
         bool isActive;
+        uint256 tokenId;
         uint256 membershipExpiry;
     }
 
@@ -35,32 +37,22 @@ contract UserManagement is Ownable {
      * @dev Constructor that deploys SoulBoundToken and CommunityToken.
      * @param initialSupply The initial supply of the CommunityToken.
      */
-    constructor(
-        string memory baseURI,
-        uint256 initialSupply
-    ) Ownable(msg.sender) {
-        sbt = new SoulBoundToken(baseURI);
+    constructor(uint256 initialSupply) Ownable(msg.sender) {
+        sbt = new SoulBoundToken();
         ctk = new CommunityToken(initialSupply);
     }
     /**
      * @dev Registers a new user by minting a SoulBoundToken and storing the user's information.
-     * @param name The name of the user.
-     * @param description The description of the user.
-     * @param image The image URI of the user.
      */
-    function registerUser(
-        string memory name,
-        string memory description,
-        string memory image
-    ) public payable {
+    function registerUser() public payable {
         require(msg.sender != address(0), "Invalid address");
         require(!users[msg.sender].isRegistered, "User already registered");
         require(msg.value >= registrationFee, "Insufficient registration fee");
 
-        users[msg.sender] = User(msg.sender, true, false, 0);
-        userAddresses.push(msg.sender);
+        uint256 tokenId = sbt.mint(msg.sender);
 
-        sbt.mint(msg.sender, name, description, image);
+        users[msg.sender] = User(msg.sender, true, false, tokenId, 0);
+        userAddresses.push(msg.sender);
 
         emit UserRegistered(msg.sender);
     }
@@ -74,7 +66,8 @@ contract UserManagement is Ownable {
         require(users[userAddress].isRegistered, "User not registered");
         require(!users[userAddress].isActive, "User already active");
 
-        uint256 tokenId = uint256(uint160(userAddress));
+        uint256 tokenId = users[userAddress].tokenId;
+
         users[userAddress].isActive = true;
         users[userAddress].membershipExpiry =
             block.timestamp +
@@ -180,21 +173,12 @@ contract UserManagement is Ownable {
     }
 
     /**
-     * @dev Retrieves the owner of a user's SoulBoundToken.
-     * @param user The address of the user to retrieve the owner for.
-     */
-    function getOwnerOf(address user) external view returns (address) {
-        uint256 tokenId = uint256(uint160(user));
-        return sbt.ownerOf(tokenId);
-    }
-
-    /**
      * @dev Checks if a user is subscribed.
      * @param user Address of the user to check.
      * @return bool True if the user is subscribed, false otherwise.
      */
     function isSubscribed(address user) external view returns (bool) {
-        uint256 tokenId = uint256(uint160(user));
+        uint256 tokenId = users[user].tokenId;
         return sbt.isSubscribed(tokenId);
     }
 
@@ -203,7 +187,7 @@ contract UserManagement is Ownable {
      * @param user The address of the user to renew the subscription for.
      */
     function renewSubscription(address user) external onlyOwner {
-        uint256 tokenId = uint256(uint160(user));
+        uint256 tokenId = users[user].tokenId;
         sbt.renewSubscription(tokenId);
     }
 
@@ -215,7 +199,7 @@ contract UserManagement is Ownable {
     function getSubscriptionEndTime(
         address user
     ) external view returns (uint256) {
-        uint256 tokenId = uint256(uint160(user));
+        uint256 tokenId = users[user].tokenId;
         return sbt.getSubscriptionEndTime(tokenId);
     }
 
@@ -227,7 +211,17 @@ contract UserManagement is Ownable {
     function getMetadata(
         address user
     ) external view returns (SoulBoundToken.Metadata memory) {
-        uint256 tokenId = uint256(uint160(user));
+        uint256 tokenId = users[user].tokenId;
         return sbt.getMetadata(tokenId);
+    }
+
+    /**
+     * @dev Gets the metadata of a user.
+     * @param user The address of the user to get the metadata for.
+     * @return Metadata The metadata of the user.
+     */
+    function getTokenURI(address user) external view returns (string memory) {
+        uint256 tokenId = users[user].tokenId;
+        return sbt.tokenURI(tokenId);
     }
 }

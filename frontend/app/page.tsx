@@ -104,7 +104,6 @@ export default function Home() {
         address: contractAddress,
         abi: contractAbi,
         functionName: 'registerUser',
-        args: ["FFB-Member", "Unique NFT by member", "ipfs://QmZDnxHF578BY3Rc5PnsyUGXgxurAJFMVPQ6unDjnLvznP"],
         value: parseEther('0.001')
       });
 
